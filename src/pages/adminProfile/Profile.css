@@ -1,0 +1,58 @@
+.profile-container {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.profile-container h4 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(26, 26, 26, 1);
+}
+
+.profile-img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border: 1px solid rgba(244, 244, 244, 1);
+  border-radius: 8px;
+}
+
+.card-padding {
+  padding: 24px 16px;
+}
+
+.admin-name {
+  font-size: 1.5rem;
+  line-height: 24px;
+  color: rgba(0, 0, 0, 1);
+}
+.personal-info {
+  font-size: 1.15rem;
+  line-height: 24px;
+  color: rgba(0, 0, 0, 1);
+}
+@media (max-width: 576px) {
+  .profile-container {
+    padding: 0 15px;
+  }
+  .admin-name {
+    font-size: 1rem;
+  }
+  .profile-container h4 {
+    font-size: 1rem;
+  }
+
+  .profile-img {
+    width: 60px;
+    height: 60px;
+  }
+
+  h5 {
+    font-size: 1rem;
+  }
+
+  .btn {
+    width: 48%;
+  }
+}
