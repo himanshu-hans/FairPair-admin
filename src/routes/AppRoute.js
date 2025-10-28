@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Loader from "../components/loader/loader";
 import Layout from "../layout";
 import NotFound from "../pages/notFoundPage/NotFound";
+import TradeUserProfile from "../pages/tradeAnalytics/tradeUserProfile";
 
 
 const Login = lazy(() => import("../pages/loginPage/Login"));
@@ -16,6 +17,7 @@ const Approute = () => {
     { path: "/", element: <Login />, layout: false },
     { path: "/user-management", element: <UserList />, layout: true },
     { path: "/trade-analytics", element: <TradesDashboard />, layout: true },
+    { path: "/trade-user-profile", element: <TradeUserProfile />, layout: true },
     { path: "/notifications", element: <BroadcastMessage />, layout: true },
     { path: "/profile", element: <Profile />, layout: true },
     { path: "*", element: <NotFound/> },

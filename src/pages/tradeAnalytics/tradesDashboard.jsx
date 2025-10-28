@@ -213,62 +213,6 @@ const TradesDashboard = () => {
         </div>
       </div>
 
-      {/* {isDrawerOpen && selectedTrade && (
-  <div className="drawer-overlay" onClick={closeDrawer}>
-    <div
-      className="trade-drawer"
-      onClick={(e) => e.stopPropagation()} 
-    >
-      <div className="drawer-header">
-        <h5>{selectedTrade.category}</h5>
-        <button className="close-btn" onClick={closeDrawer}>
-          <FaTimes />
-        </button>
-      </div>
-
-      <div className="drawer-section">
-        <h6>Provider</h6>
-        <div className="drawer-user">
-          <img src="https://i.pravatar.cc/50?img=30" alt="provider" />
-          <div>
-            <p className="user-name">{selectedTrade.by}</p>
-            <p className="textGrey">Total Trades: 34</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="drawer-section">
-        <h6>Requester</h6>
-        <div className="drawer-user">
-          <img src="https://i.pravatar.cc/50?img=40" alt="requester" />
-          <div>
-            <p className="user-name">{selectedTrade.with}</p>
-            <p className="textGrey">Total Trades: 21</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="drawer-section">
-        <h6>Dispute log</h6>
-        <ul className="dispute-log">
-          <li>Jorge reported the trade as bulky — <span>08 Jul 11:45 PM</span></li>
-          <li>Admin escalated to review — <span>08 Jul 11:50 PM</span></li>
-          <li>Admin approved refund — <span>09 Jul 12:15 AM</span></li>
-          <li>Resolved - credits refunded — <span>09 Jul 1:30 AM</span></li>
-        </ul>
-      </div>
-
-      <div className="drawer-actions">
-        <button className="blue_btn">Suspend User</button>
-        <button className="blue_btn">Refund Credits</button>
-        <button className="blue_btn">Reopen Case</button>
-        <button className="blue_btn">Close Dispute</button>
-        <button className="blue_btn">Issue Warning</button>
-      </div>
-    </div>
-  </div>
-)} */}
-
       {isDrawerOpen && selectedTrade && (
         <>
           <div className="drawer-overlay show" onClick={closeDrawer}></div>
