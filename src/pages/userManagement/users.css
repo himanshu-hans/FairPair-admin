@@ -78,6 +78,39 @@
   margin-left: 6px;
   font-weight: 500;
 }
+.credit-count {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(24, 29, 39, 1);
+}
+
+.credit-count span:nth-child(1) {
+  background-color: rgba(0, 191, 166, 1);
+  color: rgba(246, 247, 248, 1);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  margin-left: 8px;
+  font-weight: 500;
+}
+.credit-count span:nth-child(2) {
+  background-color: rgba(156, 39, 176, 1);
+  color: rgba(246, 247, 248, 1);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  margin-left: 8px;
+  font-weight: 500;
+}
+.credit-count span:nth-child(3) {
+  background-color: rgba(97, 97, 97, 1);
+  color: rgba(246, 247, 248, 1);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  margin-left: 8px;
+  font-weight: 500;
+}
 
 
 .users-container .table tr th {

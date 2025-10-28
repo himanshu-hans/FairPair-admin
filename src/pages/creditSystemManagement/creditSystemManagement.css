@@ -1,0 +1,74 @@
+.bonus-card {
+  background: #fff;
+  border-radius: 16px;
+}
+.chart-box{
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: rgba(12, 26, 75, 0.24) 0px 1px 4px;
+}
+.chart-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #6258e8 0deg 90deg,
+    #fbbf24 90deg 180deg,
+    #34d399 180deg 270deg,
+    #f87171 270deg 360deg
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.chart-inner {
+  background: #fff;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.dot-1 { background: #6258e8; }
+.dot-2 { background: #fbbf24; }
+.dot-3 { background: #34d399; }
+.dot-4 { background: #f87171; }
+
+.leader-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  width: 32%;
+  position: relative;
+}
+
+.rank-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-radius: 0% 0% 0% 50%;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.top-heading-text{
+    color: rgba(62, 53, 223, 1);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
