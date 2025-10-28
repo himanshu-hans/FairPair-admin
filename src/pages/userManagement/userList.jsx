@@ -1,14 +1,15 @@
-import React, { useState } from "react";
-
+import React, { useEffect, useState, } from "react";
+import { useNavigate } from "react-router-dom";
 // import RequestsTab from "./RequestTabs";
 import "../userManagement/users.css";
 import UserTable from "./userTable";
 import ReportTable from "./reportTable";
 import RequestTable from "./requestTable";
+import { fetchDataAuth } from "../../hooks/services/services";
 
 const UserList = () => {
   const [activeTab, setActiveTab] = useState("Users");
-
+const navigate = useNavigate()
   const renderContent = () => {
     switch (activeTab) {
       case "Users":

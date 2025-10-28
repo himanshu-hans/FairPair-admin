@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import "../userManagement/users.css";
+import { fetchDataAuth } from '../../hooks/services/services';
+import { useNavigate } from "react-router-dom";
 
 const reportData = [
   { by: 'Kwame Nkrumah', against: 'Kwame Nkrumah', reason: 'Spam', raisedOn: '29 Jun 2:00 PM', actions: ['Investigate', 'Discard'] },
@@ -15,6 +17,27 @@ const reportData = [
 ];
 
 const ReportTable = () => {
+const navigate = useNavigate()
+  const [userReportList, setUserReportList] = useState()
+   const [currentPage, setCurrentPage] = useState(1);
+      const itemsPerPage = 1;
+
+
+      const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRequests = userReportList?.users?.slice(indexOfFirstItem, indexOfLastItem);
+
+  const nextPage = () => {
+    if (currentPage < userReportList?.totalPages){
+      setCurrentPage((currentPage)=>currentPage + 1);
+    }
+  };
+console.log(userReportList?.users,"reportlist")
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((currentPage)=>currentPage - 1);
+    }
+  };
 
     const getActionButtonClass = (action) => {
     switch (action) {
@@ -28,6 +51,27 @@ const ReportTable = () => {
         return 'action-btn';
     }
   };
+
+   const fetchUserReportList = async () => {
+      try {
+        const response = await fetchDataAuth(
+          `report-trade/all_report?page=${currentPage}`,
+          navigate
+        );
+        if (!response.ok)
+          throw new Error("Failed to fetch data from the server.");
+        const getData = await response.json();
+        setUserReportList(getData?.data)
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+  
+
+  
+    useEffect(() => {
+      fetchUserReportList()
+    }, [currentPage])
   
   return (
     <div className="users-container">
@@ -86,9 +130,9 @@ const ReportTable = () => {
       </table>
 
         <div className="pagination">
-            <button className="page-btn">Previous</button>
-            <span className="page-numbers">1 2 3 ... 10</span>
-            <button className="page-btn">Next</button>
+            <button className="page-btn" onClick={prevPage}>Previous</button>
+            <span className="page-numbers">{currentPage}</span>
+            <button className="page-btn" onClick={nextPage}>Next</button>
           </div>
     </div>
   );
