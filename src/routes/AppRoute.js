@@ -4,6 +4,7 @@ import Loader from "../components/loader/loader";
 import Layout from "../layout";
 import NotFound from "../pages/notFoundPage/NotFound";
 import TradeUserProfile from "../pages/tradeAnalytics/tradeUserProfile";
+import CreditSystemManagement from "../pages/creditSystemManagement/CreditSystemManagement";
 
 
 const Login = lazy(() => import("../pages/loginPage/Login"));
@@ -20,6 +21,7 @@ const Approute = () => {
     { path: "/trade-user-profile", element: <TradeUserProfile />, layout: true },
     { path: "/notifications", element: <BroadcastMessage />, layout: true },
     { path: "/profile", element: <Profile />, layout: true },
+    { path: "/credit-system", element: <CreditSystemManagement />, layout: true },
     { path: "*", element: <NotFound/> },
 
   ];
