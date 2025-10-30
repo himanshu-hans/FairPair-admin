@@ -9,6 +9,7 @@ const UserTable = () => {
   const navigate = useNavigate();
   const [userEditModalOpen, setUserEditModalOpen] = useState(false);
   const [userList, setUserList] = useState();
+  const [userToEdit, setUserToEdit] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -39,9 +40,13 @@ const UserTable = () => {
     }
   };
 
+  const openModel = (u) => {
+    setUserToEdit(u);
+    setUserEditModalOpen(true);
+  }
   useEffect(() => {
     fetchUserList();
-  }, [currentPage]);
+  },[currentPage]);
 
   return (
     <>
@@ -115,7 +120,7 @@ const UserTable = () => {
                         src="/images/pen_edit.svg"
                         alt="Edit"
                         className="action-icon"
-                        onClick={() => setUserEditModalOpen(true)}
+                        onClick={() => openModel(u)}
                       />
                       <img
                         src="/images/delete.svg"
@@ -154,6 +159,7 @@ const UserTable = () => {
       <UserEditModel
         setUserEditModalOpen={setUserEditModalOpen}
         userEditModalOpen={userEditModalOpen}
+        userToEdit={userToEdit}
       />
     </>
   );

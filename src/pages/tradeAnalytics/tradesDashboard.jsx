@@ -1,206 +1,426 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import "../tradeAnalytics/trades.css";
+import "../userManagement/users.css";
+import { FaTimes } from "react-icons/fa";
 
-// Sample static data
-const tradesData = [
+const cardData = [
   {
-    tradeId: 394048,
-    tradeBy: 'Chinua Achebe',
-    tradeWith: 'Nelson Mandela',
-    category: 'Technology',
-    dateTime: '29 Jan, 2:00 PM',
-    status: 'Pending'
+    count: 2000,
+    label: "Completed trades",
+    count: "+3",
+    change: "Since last month",
+    icon: "../images/like.svg",
   },
   {
-    tradeId: 674849,
-    tradeBy: 'Wangari Maathai',
-    tradeWith: 'Wangari Maathai',
-    category: 'Wellness',
-    dateTime: '30 Jul, 6:00 PM',
-    status: 'Active'
+    count: 30,
+    label: "Active trades",
+    count: "+3",
+    change: "Since last month",
+    icon: "../images/hand.svg",
   },
   {
-    tradeId: 562341,
-    tradeBy: 'Nelson Mandela',
-    tradeWith: 'Chinua Achebe',
-    category: 'Finance',
-    dateTime: '2 Jul, 5:00 PM',
-    status: 'Completed'
+    count: 8,
+    label: "Pending trades",
+    count: "+3",
+    change: "Since last month",
+    icon: "../images/time.svg",
   },
   {
-    tradeId: 456488,
-    tradeBy: 'Miriam Makeba',
-    tradeWith: 'Xen Asenwene',
-    category: 'Education',
-    dateTime: '16 Mar, 4:14 PM',
-    status: 'Cancelled'
+    count: 16,
+    label: "Disputes",
+    count: "+8",
+    change: "Since last month",
+    icon: "../images/flag.svg",
   },
-  {
-    tradeId: 778323,
-    tradeBy: 'Biko Tambo',
-    tradeWith: 'Haile Selassie',
-    category: 'Travel',
-    dateTime: '12 Oct, 11:22 AM',
-    status: 'Reported'
-  },
-  {
-    tradeId: 892201,
-    tradeBy: 'Aminatta Forna',
-    tradeWith: 'Desmond Tutu',
-    category: 'Food & Beverage',
-    dateTime: '3 Aug, 1:50 PM',
-    status: 'Active'
-  },
-  {
-    tradeId: 932174,
-    tradeBy: 'Ayaan Hirsi Ali',
-    tradeWith: 'Miriam Makeba',
-    category: 'Entertainment',
-    dateTime: '5 Aug, 11:30 AM',
-    status: 'Pending'
-  }
 ];
 
-// Helper for status color
-const statusClasses = {
-  Pending: 'badge bg-secondary',
-  Active: 'badge bg-info',
-  Completed: 'badge bg-success',
-  Cancelled: 'badge bg-warning',
-  Reported: 'badge bg-danger'
+const tradeUsers = [
+  {
+    id: "389498",
+    by: "Chinua Achebe",
+    with: "Nelson Mandela",
+    category: "Technology",
+    datetime: "29 Jun 2:00 PM",
+    status: "Pending",
+  },
+  {
+    id: "474849",
+    by: "Wangari Maathai",
+    with: "Wangari Maathai",
+    category: "Wellness",
+    datetime: "30 Jul 6:00 PM",
+    status: "Active",
+  },
+  {
+    id: "562321",
+    by: "Nelson Mandela",
+    with: "Chinua Achebe",
+    category: "Finance",
+    datetime: "10 Jul 1:30 PM",
+    status: "Completed",
+  },
+  {
+    id: "647832",
+    by: "Miriam Makeba",
+    with: "Yaa Asantewaa",
+    category: "Education",
+    datetime: "15 Jul 4:45 PM",
+    status: "Cancelled",
+  },
+  {
+    id: "718293",
+    by: "Biko Tambo",
+    with: "Haile Selassie",
+    category: "Travel",
+    datetime: "22 Jul 9:15 AM",
+    status: "Reported",
+  },
+  {
+    id: "834657",
+    by: "Aminatta Forna",
+    with: "Desmond Tutu",
+    category: "Food & Beverage",
+    datetime: "28 Jul 3:00 PM",
+    status: "Active",
+  },
+  {
+    id: "902174",
+    by: "Ayaan Hirsi Ali",
+    with: "Miriam Makeba",
+    category: "Entertainment",
+    datetime: "5 Aug 11:00 AM",
+    status: "Pending",
+  },
+];
+
+const TradesDashboard = () => {
+  const [selectedTrade, setSelectedTrade] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleRowClick = (trade) => {
+    setSelectedTrade(trade);
+    setIsDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+    setSelectedTrade(null);
+  };
+
+  return (
+    <div className="container-fluid dashboard-container">
+      {/* Stats Cards */}
+      <div className="row g-3 mb-4">
+        {cardData.map((card, index) => (
+          <div key={index} className="col-md-3">
+            <div className="card p-4 border-0 trade-card">
+              <div className="d-flex justify-content-between align-items-center card-inner-body">
+                <h3>{card?.count}</h3>
+                <div className="icon-container">
+                  <img src={card?.icon} alt="icon" />
+                </div>
+              </div>
+
+              <p className="muted-text">{card?.label}</p>
+              <p className="success-text">
+                <span>{card?.count}</span> {card?.change}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="d-flex justify-content-end align-items-center mb-3 flex-wrap gap-2">
+        <div className="d-flex gap-2">
+          <select className="form-select trade-select">
+            <option>Status</option>
+          </select>
+          <select className="form-select trade-select">
+            <option>Category</option>
+            <option>Category</option>
+          </select>
+          <button className="blue_btn py-0 px-5">Export</button>
+        </div>
+      </div>
+
+      <div className="users-container">
+        <div className="users-header justify-content-between">
+          {/* <h2>Users</h2> */}
+          <div className="user-count">
+            Trades <span>50</span>
+          </div>
+          <div className="d-flex gap-2 align-items-center">
+            <select className="form-select trade-select">
+              <option>WEEKLY</option>
+            </select>
+          </div>
+        </div>
+
+        <table className="table table-hover">
+          <thead>
+            <tr>
+              <th>Trade ID</th>
+              <th>Trade by</th>
+              <th>Trade with</th>
+              <th>Category</th>
+              <th>Date/Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tradeUsers.map((trade, index) => (
+              <tr
+                key={index}
+                onClick={() => handleRowClick(trade)}
+                className="clickable-row"
+              >
+                <td>{trade.id}</td>
+                <td>
+                  <div className="user-info">
+                    <img
+                      src={`https://i.pravatar.cc/40?img=${index + 10}`}
+                      alt={trade.by}
+                    />
+                    <span>{trade.by}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className="user-info">
+                    <img
+                      src={`https://i.pravatar.cc/40?img=${index + 10}`}
+                      alt={trade.with}
+                    />
+                    <span>{trade.with}</span>
+                  </div>
+                </td>
+                <td className="textGrey">{trade.category}</td>
+                <td className="textGrey">{trade.datetime}</td>
+                <td>
+                  <span className={`status-text ${trade.status.toLowerCase()}`}>
+                    {trade.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="pagination">
+          <button className="page-btn">Previous</button>
+          <span className="page-numbers">1 2 3 ... 10</span>
+          <button className="page-btn">Next</button>
+        </div>
+      </div>
+
+      {isDrawerOpen && selectedTrade && (
+        <>
+          <div className="drawer-overlay show" onClick={closeDrawer}></div>
+
+          <div
+            className={`trade-drawer show`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="drawer-header d-flex justify-content-between align-items-center p-3 border-bottom">
+              <div className="d-flex align-items-center trades-drawer">
+                <h5>{selectedTrade.category}</h5>
+                <h6 className="d-flex align-items-center gap-2">
+                  <img src="../images/calender.svg" className="img-fluid"></img>{" "}
+                  6 PM - 7 PM
+                </h6>
+                <h6>|</h6>
+                <h6>Monday</h6>
+                <span className="coin-badge">
+                  <img src="../images/wallet.svg" className="img-fluid"></img>{" "}
+                  50
+                </span>
+                <h6 style={{ color: "rgba(26, 26, 26, 0.56)" }}>
+                  Trade ID:{" "}
+                  <span style={{ color: "rgba(26, 26, 26, 0.88)" }}>
+                    {selectedTrade.id}
+                  </span>
+                </h6>
+              </div>
+              <div className="d-flex gap-3 align-items-center">
+                <div className="cursor-pointer">
+                  <img
+                    src="../images/link.svg"
+                    alt="link icon"
+                    className="img-fluid"
+                  ></img>
+                </div>
+                <button
+                  className="p-2 bg-transparent border-0"
+                  onClick={closeDrawer}
+                >
+                  <FaTimes />
+                </button>
+              </div>
+            </div>
+
+            <div className="drawer-body p-4">
+              {/* Provider Section */}
+              <div className="card border-0 drawer-card mb-3">
+                <h6 className="fw-medium mb-3">Provider</h6>
+                <div className="row g-3 align-items-center">
+                  <div className="col-md-4 ">
+                    <div className="stats-box d-flex align-items-center gap-3 p-3">
+                      <img
+                        src="https://i.pravatar.cc/60?img=30"
+                        alt="provider"
+                        className="rounded-circle"
+                      />
+                      <div>
+                        <p className="fw-semibold mb-1">{selectedTrade.by}</p>
+                        <span className="badges rounded-pill px-3">
+                          3rd Year
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-4 ">
+                    <div className="d-flex align-items-center gap-3 stats-box p-3">
+                      <p
+                        className="mt-2 small"
+                        style={{ color: "rgba(26, 26, 26, 1)" }}
+                      >
+                        <i className="bi bi-telephone me-2"></i> +1 8466784862{" "}
+                        <br />
+                        <i className="bi bi-envelope me-2"></i>{" "}
+                        craig@example.com <br />
+                        <i className="bi bi-code-slash me-2"></i> Java, Python,
+                        C++
+                      </p>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="stats-box p-3 rounded">
+                      <p className="mb-1 small d-flex align-items-center gap-4">
+                        <span>Total Trades</span>
+                        <span className="fw-semibold text-dark">34</span>
+                      </p>
+                      <p className="mb-1 small d-flex align-items-center gap-4">
+                        <span>Published</span>
+                        <span className="fw-semibold text-dark">21</span>
+                      </p>
+                      <p className="mb-1 small d-flex align-items-center gap-4">
+                        <span>Reported</span>
+                        <span className="fw-semibold text-dark">2</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Requester Section */}
+              <div className="drawer-card mb-3">
+                <h6 className="fw-medium mb-3">Requester</h6>
+                <div className="row">
+                  <div className="col-md-4">
+                    <div className="d-flex align-items-center gap-3 stats-box p-3">
+                      <img
+                        src="https://i.pravatar.cc/60?img=40"
+                        alt="requester"
+                        className="rounded-circle"
+                      />
+                      <div>
+                        <p className="fw-semibold mb-1">{selectedTrade.with}</p>
+                        <span className="badges rounded-pill px-3">
+                          4th Year
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="d-flex align-items-center gap-3 stats-box p-3">
+                      <p
+                        className="mt-2 small"
+                        style={{ color: "rgba(26, 26, 26, 1)" }}
+                      >
+                        <i className="bi bi-telephone me-2"></i> +1 5551234567{" "}
+                        <br />
+                        <i className="bi bi-envelope me-2"></i>{" "}
+                        jorge@example.com <br />
+                        <i className="bi bi-code-slash me-2"></i> JavaScript,
+                        Ruby, Go
+                      </p>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="stats-box p-3 rounded">
+                      <p className="mb-1 small d-flex align-items-center gap-4">
+                        <span>Total Trades</span>
+                        <span className="fw-semibold text-dark">34</span>
+                      </p>
+                      <p className="mb-1 small d-flex align-items-center gap-4">
+                        <span>Published</span>
+                        <span className="fw-semibold text-dark">21</span>
+                      </p>
+                      <p className="mb-1 small d-flex align-items-center gap-4">
+                        <span>Reported</span>
+                        <span className="fw-semibold text-dark">2</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dispute Log */}
+              <div className="dispute-card mb-4">
+                <h6 className="fw-semibold mb-3 small text-muted">
+                  Dispute log
+                </h6>
+
+                <div className="dispute-item d-flex justify-content-between align-items-center">
+                  <span>Jorge reported the trade as bulley</span>
+                  <div className="d-flex gap-3 align-items-center">
+                    <div>08 Jul</div>
+                    <div className="text-muted small">11:45 PM</div>
+                  </div>
+                </div>
+
+                <div className="dispute-item d-flex justify-content-between align-items-center">
+                  <span>Admin escalated to review</span>
+                  <div className="d-flex gap-3 align-items-center">
+                    <div>09 Jul</div>
+                    <div className="text-muted small">12:00 AM</div>
+                  </div>
+                </div>
+
+                <div className="dispute-item d-flex justify-content-between align-items-center">
+                  <span>
+                    Admin Approved the trade as bulley, on the basis of review
+                  </span>
+                  <div className="d-flex gap-3 align-items-center">
+                    <div>09 Jul</div>
+                    <div className="text-muted small">12:15 AM</div>
+                  </div>
+                </div>
+
+                <div className="dispute-item d-flex justify-content-between align-items-center">
+                  <span>Resolved - credits refunded</span>
+                  <div className="d-flex gap-3 align-items-center">
+                    <div>09 Jul</div>
+                    <div className="text-muted small">12:30 AM</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="d-flex flex-wrap gap-3 mt-auto">
+                <button className="custom-badge">Suspend User</button>
+                <button className="custom-badge">Refund Credits</button>
+                <button className="custom-badge">Reopen Case</button>
+                <button className="custom-badge">Close Dispute</button>
+                <button className="custom-badge">Issue Warning</button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
 
-// Dashboard Info Cards (top section)
-function InfoCards() {
-  return (
-    <div className="row g-3 mb-4">
-      <div className="col-md-3 col-6">
-        <div className="card text-center p-3">
-          <h4>2000</h4>
-          <span>Completed trades</span>
-          <div className="text-success small">+3 Since last month</div>
-        </div>
-      </div>
-      <div className="col-md-3 col-6">
-        <div className="card text-center p-3">
-          <h4>30</h4>
-          <span>Active trades</span>
-          <div className="text-success small">+3 Since last month</div>
-        </div>
-      </div>
-      <div className="col-md-3 col-6">
-        <div className="card text-center p-3">
-          <h4>8</h4>
-          <span>Pending trades</span>
-          <div className="text-success small">+3 Since last month</div>
-        </div>
-      </div>
-      <div className="col-md-3 col-6">
-        <div className="card text-center p-3">
-          <h4>16</h4>
-          <span>Disputes</span>
-          <div className="text-success small">+3 Since last month</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Filters UI (non-functional)
-function FiltersBar() {
-  return (
-    <div className="d-flex flex-wrap gap-2 mb-3">
-      <select className="form-select w-auto">
-        <option>From</option>
-      </select>
-      <select className="form-select w-auto">
-        <option>To</option>
-      </select>
-      <select className="form-select w-auto">
-        <option>Skill</option>
-      </select>
-      <select className="form-select w-auto">
-        <option>Status</option>
-      </select>
-      <select className="form-select w-auto">
-        <option>Category</option>
-      </select>
-      <button className="btn btn-primary ms-auto">Export</button>
-    </div>
-  );
-}
-
-// Pagination UI-only
-function Pagination({ page, setPage, totalPages }) {
-  return (
-    <nav>
-      <ul className="pagination justify-content-end">
-        <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
-          <button className="page-link" onClick={() => setPage(page - 1)}>Previous</button>
-        </li>
-        {[...Array(totalPages)].map((_, idx) => (
-          <li key={idx} className={`page-item ${page === idx + 1 ? 'active' : ''}`}>
-            <button className="page-link" onClick={() => setPage(idx + 1)}>{idx + 1}</button>
-          </li>
-        ))}
-        <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
-          <button className="page-link" onClick={() => setPage(page + 1)}>Next</button>
-        </li>
-      </ul>
-    </nav>
-  );
-}
-
-function TradesTable({ trades }) {
-  return (
-    <table className="table table-hover align-middle rounded-3 overflow-hidden">
-      <thead className="table-light">
-        <tr>
-          <th>Trade ID</th>
-          <th>Trade by</th>
-          <th>Trade with</th>
-          <th>Category</th>
-          <th>Date/Time</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {trades.map((trade, idx) => (
-          <tr key={trade.tradeId}>
-            <td>{trade.tradeId}</td>
-            <td>{trade.tradeBy}</td>
-            <td>{trade.tradeWith}</td>
-            <td>{trade.category}</td>
-            <td>{trade.dateTime}</td>
-            <td><span className={statusClasses[trade.status]}>{trade.status}</span></td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-export default function TradesDashboard() {
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 7;
-  const totalPages = 8; // Example static, can change
-
-  // Static paginated data for demo, all on page 1 for UI
-  const paginatedData = tradesData; // implement slice for real data if needed
-
-  return (
-    <div className="container my-4">
-      <InfoCards />
-      <FiltersBar />
-      <div className="d-flex align-items-center mb-2">
-        <h5 className="mb-0">Trades <span className="badge bg-warning text-dark ms-1">50</span></h5>
-        <div className="ms-auto">
-          <select className="form-select form-select-sm w-auto">
-            <option>WEEKLY</option>
-          </select>
-        </div>
-      </div>
-      <TradesTable trades={paginatedData} />
-      <Pagination page={page} setPage={setPage} totalPages={totalPages} />
-    </div>
-  );
-}
+export default TradesDashboard;

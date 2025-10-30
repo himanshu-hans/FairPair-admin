@@ -2,7 +2,21 @@ import React from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
-const UserEditModel = ({ setUserEditModalOpen, userEditModalOpen }) => {
+const UserEditModel = ({ setUserEditModalOpen, userEditModalOpen,userToEdit }) => {
+    const [userModelData, setUserModelData] = React.useState({
+        username: "",
+        year: "",
+    });
+
+const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUserModelData((prevData) => ({
+        ...prevData,
+        [name]: value,
+    }));
+}
+
+
 
     return (
         <>
@@ -27,50 +41,35 @@ const UserEditModel = ({ setUserEditModalOpen, userEditModalOpen }) => {
                                         <input
                                             type="text"
                                             className="form-control"
+                                            name="username"
                                             id="username"
-                                            //   value={username}
-                                            //   onChange={(e) => setUsername(e.target.value)}
+                                              value={userToEdit?.username}
+                                          onChange={(e) => handleChange(e)}
                                             placeholder="Enter your username"
                                             required
                                         />
                                     </div>
-                                    {/* Input Fields Here */}
                                 </div>
                             </div>
                               <div className="row g-4">
                                 <div className="form-group">
                                     <div className="form-group mb-2 d-flex flex-column">
-                                        <label htmlFor="username" className="form-label">Username</label>
+                                        <label htmlFor="username" className="form-label">Year</label>
                                         <input
                                             type="text"
                                             className="form-control"
+                                            name="year"
                                             id="username"
-                                            //   value={username}
-                                            //   onChange={(e) => setUsername(e.target.value)}
-                                            placeholder="Enter your username"
+                                              value={userToEdit?.year}
+                                              onChange={(e) => handleChange(e)}
+                                            placeholder="Enter Year"
                                             required
                                         />
                                     </div>
                                     {/* Input Fields Here */}
                                 </div>
                             </div>
-                              <div className="row g-4">
-                                <div className="form-group">
-                                    <div className="form-group mb-2 d-flex flex-column">
-                                        <label htmlFor="username" className="form-label">Username</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            id="username"
-                                            //   value={username}
-                                            //   onChange={(e) => setUsername(e.target.value)}
-                                            placeholder="Enter your username"
-                                            required
-                                        />
-                                    </div>
-                                    {/* Input Fields Here */}
-                                </div>
-                            </div>
+                             
                             <div className="d-flex justify-content-center gap-2 mt-3">
                                 <Button variant="primary" type="submit">
                                     Save
