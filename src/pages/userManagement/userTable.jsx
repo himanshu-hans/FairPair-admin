@@ -1,138 +1,126 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
 import "../userManagement/users.css";
-import { FaCheckCircle} from "react-icons/fa";
+import { FaCheckCircle, FaClock, FaTimesCircle } from "react-icons/fa";
+import { fetchDataAuth } from '../../hooks/services/services';
+import { useNavigate } from "react-router-dom";
+import UserEditModel from "./userEditModel";
 
-
- const users = [
-    {
-      name: "Kwame Nkrumah",
-      email: "olivia@untitledui.com",
-      registration: "Verified",
-      phone: "+217347634767",
-      year: "2nd",
-    },
-    {
-      name: "Amina Jalloh",
-      email: "phoenix@untitledui.com",
-      registration: "In progress",
-      phone: "+217347634768",
-      year: "1st",
-    },
-    {
-      name: "Thandiwe Moyo",
-      email: "lana@untitledui.com",
-      registration: "Verified",
-      phone: "+217347634769",
-      year: "4th",
-    },
-    {
-      name: "Thandiwe Moyo",
-      email: "lana@untitledui.com",
-      registration: "Verified",
-      phone: "+217347634769",
-      year: "4th",
-    },
-    {
-      name: "Thandiwe Moyo",
-      email: "lana@untitledui.com",
-      registration: "In progress",
-      phone: "+217347634769",
-      year: "4th",
-    },
-    {
-      name: "Thandiwe Moyo",
-      email: "lana@untitledui.com",
-      registration: "Verified",
-      phone: "+217347634769",
-      year: "4th",
-    },
-    {
-      name: "Thandiwe Moyo",
-      email: "lana@untitledui.com",
-      registration: "Verified",
-      phone: "+217347634769",
-      year: "4th",
-    },
-    {
-      name: "Thandiwe Moyo",
-      email: "lana@untitledui.com",
-      registration: "In progress",
-      phone: "+217347634769",
-      year: "4th",
-    },
-    {
-      name: "Thandiwe Moyo",
-      email: "lana@untitledui.com",
-      registration: "Verified",
-      phone: "+217347634769",
-      year: "4th",
-    },
-    {
-      name: "Thandiwe Moyo",
-      email: "lana@untitledui.com",
-      registration: "In progress",
-      phone: "+217347634769",
-      year: "4th",
-    },
-  ];
-  
 const UserTable = () => {
+  const navigate = useNavigate();
+  const [userEditModalOpen, setUserEditModalOpen] = useState(false);
+  const [userList, setUserList] = useState();
+  const [userToEdit, setUserToEdit] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = userList?.users?.slice(indexOfFirstItem, indexOfLastItem) || [];
+
+  const nextPage = () => {
+    if (currentPage < userList?.totalPages) {
+      setCurrentPage((currentPage) => currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((currentPage) => currentPage - 1);
+    }
+  };
+
+  const fetchUserList = async () => {
+    try {
+      const response = await fetchDataAuth(`user/all_users?page=${currentPage}`, navigate);
+      if (!response.ok) throw new Error("Failed to fetch data from the server.");
+      const getData = await response.json();
+      setUserList(getData?.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const openModel = (u) => {
+    setUserToEdit(u);
+    setUserEditModalOpen(true);
+  }
+  useEffect(() => {
+    fetchUserList();
+  },[currentPage]);
+
   return (
-       <div className="users-container">
-          <div className="users-header">
-            {/* <h2>Users</h2> */}
-            <div className="user-count">
-              Total <span>100 users</span>
-            </div>
+    <>
+      <div className="users-container">
+        <div className="users-header">
+          <div className="user-count">
+            Total <span>{currentUsers?.length || 0} users</span>
           </div>
-    
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email address</th>
-                <th>Registration</th>
-                <th>Phone number</th>
-                <th>Year</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u, index) => (
+        </div>
+
+        <table className="table table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email address</th>
+              <th>Registration</th>
+              <th>Phone number</th>
+              <th>Year</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {currentUsers?.length > 0 ? (
+              currentUsers.map((u, index) => (
                 <tr key={index}>
                   <td>
                     <div className="user-info">
                       <img
-                        src={`https://i.pravatar.cc/40?img=${index + 10}`}
-                        alt={u.name}
+                        src={u?.bio || `images/profile_img.svg`}
+                        alt={u?.name || "User"}
                       />
-                      <span>{u.name}</span>
+                      <span>{u?.name || "N/A"}</span>
                     </div>
                   </td>
-                  <td className="textGrey">{u.email}</td>
+
+                  <td className="textGrey">{u?.useremail || "N/A"}</td>
+
                   <td>
                     <span
                       className={`status ${
-                        u.registration === "Verified" ? "verified" : "in-progress"
+                        u?.registration === "Verified"
+                          ? "verified"
+                          : u?.registration === "Rejected"
+                          ? "rejected"
+                          : "pending"
                       }`}
                     >
-                      {u.registration === "Verified" ? (
+                      {u?.registration === "Verified" ? (
                         <>
-                          <FaCheckCircle /> Verified
+                          <FaCheckCircle color="green" /> Verified
+                        </>
+                      ) : u?.registration === "Rejected" ? (
+                        <>
+                          <FaTimesCircle color="red" /> Rejected
                         </>
                       ) : (
-                        "In progress"
+                        <>
+                          <FaClock color="orange" /> Pending
+                        </>
                       )}
                     </span>
                   </td>
-                  <td className="textGrey">{u.phone}</td>
-                  <td className="textGrey">{u.year}</td>
+
+                  <td className="textGrey">{u?.phoneNumber || "N/A"}</td>
+                  <td className="textGrey">{u?.year || "N/A"}</td>
+
                   <td>
                     <div className="action">
                       <img
                         src="/images/pen_edit.svg"
                         alt="Edit"
                         className="action-icon"
+                        onClick={() => openModel(u)}
                       />
                       <img
                         src="/images/delete.svg"
@@ -142,17 +130,39 @@ const UserTable = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-    
-          <div className="pagination">
-            <button className="page-btn">Previous</button>
-            <span className="page-numbers">1 2 3 ... 10</span>
-            <button className="page-btn">Next</button>
-          </div>
-        </div>
-  )
-}
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="text-center text-muted py-4">
+                  No Users Found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
-export default UserTable
+        <div className="pagination">
+          <button className="page-btn" onClick={prevPage} disabled={currentPage === 1}>
+            Previous
+          </button>
+          <span className="page-numbers">{currentPage}</span>
+          <button
+            className="page-btn"
+            onClick={nextPage}
+            disabled={currentPage === userList?.totalPages}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
+      <UserEditModel
+        setUserEditModalOpen={setUserEditModalOpen}
+        userEditModalOpen={userEditModalOpen}
+        userToEdit={userToEdit}
+      />
+    </>
+  );
+};
+
+export default UserTable;
