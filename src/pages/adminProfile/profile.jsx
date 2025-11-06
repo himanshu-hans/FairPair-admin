@@ -1,21 +1,99 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import "./Profile.css";
 import { FaPencilAlt } from "react-icons/fa";
+import { showToast } from "../../components/showToast";
+import { get, patch } from "../../hooks/services/services";
 
 const Profile = () => {
+  const userId = useSelector((state) => state.auth?.userId);
+
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    firstName: "Apurva",
-    lastName: "Apurva",
-    phone: "+91 4694659458",
-    email: "eurj@example.com",
-    joinedOn: "22/01/2025",
+    fullName: "",
+    phone: "",
+    email: "",
+    joinedOn: "",
     lastDate: "Till today",
+    profileImage: "",
+    role: "",
   });
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserProfile();
+    }
+  }, [userId]);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await get(`user/user-profile/${userId}`);
+
+      if (response.status === 200 || response.status === 201) {
+        const data = response.data.data;
+        setFormData({
+          fullName: data.username || "",
+          phone: data.phoneNumber || "",
+          email: data.email || "",
+          joinedOn: data.createdAt
+            ? new Date(data.createdAt).toLocaleDateString("en-GB")
+            : "",
+          lastDate: "Till today",
+          profileImage: data.profile_image || "../images/profile-img.svg",
+          role: data.role_id === 2 ? "Admin" : "User",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      showToast(error.message || "Failed to load profile data", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const handleUpdate = async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    username: formData.fullName, 
+  };
+
+  try {
+    setLoading(true);
+
+    const response = await patch(`user/updateprofile/${userId}`, payload);
+
+    if (response.status === 200 || response.status === 201) {
+      showToast("Profile updated successfully!", "success");
+      setIsEditing(false);
+      fetchUserProfile(); 
+    }
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    showToast(error.message || "Failed to update profile", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  if (loading && !formData.fullName) {
+    return (
+      <div className="profile-container">
+        <div className="text-center mt-5">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-container">
@@ -25,13 +103,15 @@ const Profile = () => {
           {/* Header */}
           <div className="d-flex align-items-center">
             <img
-              src="../images/profile-img.svg"
+              src={formData.profileImage}
               alt="Profile"
               className="me-3 profile-img"
             />
             <div>
-              <h5 className="mb-0 fw-bold admin-name">Apurv Potdar</h5>
-              <small className="text-muted" style={{fontSize:'1.1rem'}}>Admin</small>
+              <h5 className="mb-0 fw-bold admin-name">{formData.fullName}</h5>
+              <small className="text-muted" style={{ fontSize: "1.1rem" }}>
+                Admin
+              </small>
             </div>
           </div>
         </div>
@@ -56,26 +136,16 @@ const Profile = () => {
           {/* Info View/Edit */}
           <div className="mt-3">
             {isEditing ? (
-              <form className="row g-3">
+              <form className="row g-3" onSubmit={handleUpdate}>
                 <div className="col-md-6">
-                  <label className="form-label fw-semibold">First Name</label>
+                  <label className="form-label fw-semibold">Full Name</label>
                   <input
                     type="text"
                     className="form-control p-4"
-                    name="firstName"
-                    value={formData.firstName}
+                    name="fullName"
+                    value={formData.fullName}
                     onChange={handleChange}
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold">Last Name</label>
-                  <input
-                    type="text"
-                    className="form-control p-4"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
+                    required
                   />
                 </div>
 
@@ -86,40 +156,40 @@ const Profile = () => {
                     className="form-control p-4"
                     name="phone"
                     value={formData.phone}
-                    onChange={handleChange}
+                    disabled
                   />
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label  fw-semibold">Email</label>
+                  <label className="form-label fw-semibold">Email</label>
                   <input
                     type="email"
                     className="form-control p-4"
                     name="email"
                     value={formData.email}
-                    onChange={handleChange}
+                    disabled
                   />
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label  fw-semibold">Joined on</label>
+                  <label className="form-label fw-semibold">Joined on</label>
                   <input
                     type="text"
                     className="form-control p-4"
                     name="joinedOn"
                     value={formData.joinedOn}
-                    onChange={handleChange}
+                    disabled
                   />
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label  fw-semibold">Last date</label>
+                  <label className="form-label fw-semibold">Last date</label>
                   <input
                     type="text"
                     className="form-control p-4"
                     name="lastDate"
                     value={formData.lastDate}
-                    onChange={handleChange}
+                    disabled
                   />
                 </div>
 
@@ -127,35 +197,25 @@ const Profile = () => {
                   <button
                     type="button"
                     className="transparent_btn"
-                    onClick={() => setIsEditing(false)}
+                    onClick={() => {
+                      setIsEditing(false);
+                      fetchUserProfile();
+                    }}
+                    disabled={loading}
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="blue_btn"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsEditing(false);
-                    }}
-                  >
-                    Done
+                  <button type="submit" className="blue_btn" disabled={loading}>
+                    {loading ? "Updating..." : "Done"}
                   </button>
                 </div>
               </form>
             ) : (
               <div className="row mt-2">
                 <div className="col-md-6 mb-3">
-                  <p className="mb-1 fw-semibold">First Name</p>
+                  <p className="mb-1 fw-semibold">Full Name</p>
                   <p className="text-muted fw-medium fs-5">
-                    {formData.firstName}
-                  </p>
-                </div>
-
-                <div className="col-md-6 mb-3">
-                  <p className="mb-1 fw-semibold">Last Name</p>
-                  <p className="text-muted fw-medium fs-5">
-                    {formData.lastName}
+                    {formData.fullName}
                   </p>
                 </div>
 
@@ -177,7 +237,7 @@ const Profile = () => {
                 </div>
 
                 <div className="col-md-6 mb-3">
-                  <p className="mb-1 text-muted small">Last date</p>
+                  <p className="mb-1 fw-semibold">Last date</p>
                   <p className="text-muted fw-medium fs-5">
                     {formData.lastDate}
                   </p>
