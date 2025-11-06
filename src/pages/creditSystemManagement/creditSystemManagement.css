@@ -72,3 +72,43 @@
     font-size: 1.5rem;
     font-weight: 600;
 }
+
+.allocate-btn {
+    background-color: #fff; 
+    color: rgba(26, 26, 26, 0.8); 
+    border: 1px solid rgba(26, 26, 26, 0.16); 
+}
+
+.allocate-btn:hover {
+    background-color: #fff;
+    color: #3E35DF; 
+}
+
+.revoke-btn {
+    background-color: #fff;
+    color: rgba(26, 26, 26, 0.8); 
+    border: 1px solid rgba(26, 26, 26, 0.16); 
+}
+
+.revoke-btn:hover {
+    background-color: #fff; 
+    color: #B7372E;
+}
+
+.plan-text {
+  font-weight: 400;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.plan-text.bronze {
+  color: #00bfa6;
+}
+
+.plan-text.silver {
+  color: #9c27b0;
+}
+
+.plan-text.gold {
+  color: #616161;
+}
