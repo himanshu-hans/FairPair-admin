@@ -40,7 +40,7 @@ const CreditSystemManagement = () => {
       }
     } catch (error) {
       console.error("Error fetching credit data:", error.message);
-      showToast("Error fetching credit data", "error");
+      showToast(error.message || error.response?.message || error.response?.data?.message || "Error fetching credit data", "error");
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,7 @@ const CreditSystemManagement = () => {
       }
     } catch (error) {
       console.error("Error fetching subscribers:", error.message);
-      showToast("Error fetching subscribers", "error");
+      showToast(error.message || error.response?.message || error.response?.data?.message ||  "Error fetching subscribers", "error");
     } finally {
       setSubscribersLoading(false);
     }
@@ -72,7 +72,7 @@ const CreditSystemManagement = () => {
       }
     } catch (error) {
       console.error("Error fetching chart data:", error.message);
-      showToast("Error fetching chart data", "error");
+      showToast(error.message || error.response?.message || error.response?.data?.message || "Error fetching chart data", "error");
     }
   };
 

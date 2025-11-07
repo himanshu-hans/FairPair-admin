@@ -1,10 +1,13 @@
 import React from "react";
 import "../header/header.css";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Header = ({ isSidebarOpen }) => {
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
+  const userId = useSelector((state) => state.auth?.userId);
+  const username = useSelector((state) => state.auth?.username);
+  const profileImage = useSelector((state) => state.auth?.profileImage);
   console.log("...", userId);
 
   const handleProfileClick = () => {
@@ -29,11 +32,11 @@ const Header = ({ isSidebarOpen }) => {
           onClick={handleProfileClick}
         >
           <img
-            src="images/profile_img.svg"
+            src={profileImage || "images/dummy_image.svg"}
             alt="User Avatar"
             className="avatar"
           />
-          <span className="username ms-2">Tlotliso</span>
+          <span className="username ms-2">{username || "User"}</span>
         </div>
       </div>
     </div>

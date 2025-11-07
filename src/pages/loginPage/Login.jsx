@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './login.css';
 import { useNavigate } from 'react-router-dom';
 import { showToast } from '../../components/showToast';
-import { post } from '../../hooks/services/services';
+import { get, post } from '../../hooks/services/services';
 import { loginSuccess } from '../../components/authRedux/authSlice';
 
 const Login = () => {
@@ -37,6 +37,8 @@ const Login = () => {
         const authToken = getData?.data?.access_token || getData?.access_token;
         const userId = getData?.data?.userId || getData?.userId;
         const refreshToken = getData?.data?.refresh_token || getData?.refresh_token;
+        const username = getData?.data?.username || getData?.username;
+        const profileImage = getData?.data?.profileImage || getData?.profileImage;
 
         if (authToken) {
           // Dispatch to Redux store
@@ -45,10 +47,12 @@ const Login = () => {
             refresh_token: refreshToken || null,
             userId: userId,
             userEmail: useremail,
+            username: username,
+            profileImage: profileImage,
             rememberMe: rememberMe,
           }));
 
-          // Optional:- Keep localStorage for remember me feature
+          // Optional:-  Keep localStorage for remember me feature
           if (rememberMe) {
             localStorage.setItem("rememberMe", "true");
             localStorage.setItem("savedEmail", useremail);
@@ -57,17 +61,17 @@ const Login = () => {
             localStorage.removeItem("savedEmail");
           }
 
-          showToast("Login successful!", "success");
+          showToast(response?.message || response?.data?.message || "Login successful!", "success");
           navigate("/user-management");
         } else {
-          showToast("Login failed. No token received.", "error");
+          showToast(response?.message || response?.data?.message || "Login failed. No token received.", "error");
         }
       } else {
-        showToast(response.data?.message || "Invalid credentials", "error");
+        showToast(response.data?.message || response?.message || "Invalid credentials", "error");
       }
     } catch (error) {
       console.error("Login error:", error);
-      showToast(error.response?.data?.message || error.message || "An error occurred during login", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "An error occurred during login", "error");
     } finally {
       setLoading(false);
     }

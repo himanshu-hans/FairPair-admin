@@ -53,13 +53,13 @@ const UserEditModel = ({
             );
 
             if (response.status === 200 || response.status === 201) {
-                showToast("User updated successfully!", "success");
+                showToast(response?.data?.message || response?.message || "User updated successfully!", "success");
                 onClose();
             }
         } catch (error) {
             console.error("Error updating user:", error);
             showToast(
-                error.response?.data?.message || "Error updating user",
+                error.response?.data?.message || error.response?.message || error.message || "Error updating user",
                 "error"
             );
         } finally {

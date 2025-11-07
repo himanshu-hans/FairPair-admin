@@ -13,7 +13,7 @@ const Sidebar = ({ isSdOpen, setIsSdOpen }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Get tokens from Redux store
-  const { access_token, refresh_token } = useSelector((state) => state.auth);
+  const { access_token } = useSelector((state) => state.auth);
 
   const menuItems = [
     { name: "User Management", icon: "bi-grid-fill", path: "/user-management" },
@@ -39,39 +39,49 @@ const Sidebar = ({ isSdOpen, setIsSdOpen }) => {
   const handleLogout = async () => {
     if (isLoggingOut) return;
 
+    if (!access_token) {
+      showToast("No active session found", "warning");
+      dispatch(logout());
+      navigate("/");
+      return;
+    }
+
     setIsLoggingOut(true);
 
     try {
-      const response = await post(
-        "auth/logout",
-        {},
-        {
-          headers: {
-            "x-refresh-token": refresh_token || "",
-          },
-        }
-      );
+      const response = await post("auth/logout", {});
 
       if (response.status === 200 || response.status === 201) {
         dispatch(logout());
         localStorage.removeItem("rememberMe");
         localStorage.removeItem("savedEmail");
         showToast(
-          response.data?.message || "Logged out successfully!",
+          response.data?.message ||
+            response?.message ||
+            "Logged out successfully!",
           "success"
         );
         navigate("/");
       }
     } catch (error) {
       console.error("Logout error:", error);
-      dispatch(logout());
-      localStorage.removeItem("rememberMe");
-      localStorage.removeItem("savedEmail");
-      showToast(
-        error.response?.data?.message || "Logged out Locally",
-        "warning"
-      );
-      navigate("/");
+
+      if (!error.response) {
+        showToast("Network error. Please check your connection.", "error");
+      } else {
+        dispatch(logout());
+        localStorage.removeItem("rememberMe");
+        localStorage.removeItem("savedEmail");
+
+        showToast(
+          error.response?.data?.message ||
+            error.response?.message ||
+            error?.message ||
+            "Logged out locally",
+          "warning"
+        );
+        navigate("/");
+      }
     } finally {
       setIsLoggingOut(false);
     }

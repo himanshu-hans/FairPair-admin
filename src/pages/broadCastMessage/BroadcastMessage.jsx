@@ -62,7 +62,7 @@ const BroadcastMessage = () => {
       const response = await post("broadcast/create", payload);
   
       if (response.status === 200 || response.status === 201) {
-        showToast("Broadcast message scheduled successfully!", "success");
+        showToast(response?.message || response?.data?.message || "Broadcast message scheduled successfully!", "success");
         setMessage("");
         setSendDate("");
         setSendTime("");
@@ -70,7 +70,7 @@ const BroadcastMessage = () => {
       }
     } catch (error) {
       console.error("Error creating broadcast:", error.message);
-      showToast(error.response?.data?.message || "Error creating broadcast message", "error");
+      showToast(error.response?.data?.message || error.response?.message || "Error creating broadcast message", "error");
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ const BroadcastMessage = () => {
             <label className="form-label broadcast-label">Do not send to</label>
             <div className="custom-multi-select" ref={dropdownRef}>
               <div
-                className="custom-select-control form-select"
+                className="custom-select-control form-select form-control custom-input"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 {excludeUsers.length > 0

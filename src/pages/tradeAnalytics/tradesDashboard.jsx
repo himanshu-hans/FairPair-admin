@@ -45,11 +45,11 @@ const TradesDashboard = () => {
       if (response.status === 200 || response.status === 201) {
         setCategories(response.data?.data || []);
       } else {
-        showToast("Failed to load categories", "warning");
+        showToast(response?.data?.message || response?.message || "Failed to load categories", "warning");
       }
     } catch (error) {
       console.error("Error fetching categories:", error.message);
-      showToast("Error fetching categories", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching categories", "error");
     }
   };
 
@@ -68,14 +68,14 @@ const TradesDashboard = () => {
 
       const response = await get(`publishtrades/all?${queryParams}`);
 
-      if (response.status !== 200) {
-        showToast("Failed to fetch trades data", "error");
+      if (response.status === 200 || response.status === 201) {
+        setTradesData(response.data?.data || { trades: [] });
       }
 
       setTradesData(response.data?.data || { trades: [] });
     } catch (error) {
       console.error("Error fetching trades:", error.message);
-      showToast("Error loading trades", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Error loading trades", "error");
       setTradesData({ trades: [] });
     } finally {
       setLoading(false);
@@ -99,13 +99,13 @@ const TradesDashboard = () => {
         link.remove();
         window.URL.revokeObjectURL(url);
 
-        showToast("Trades exported successfully!", "success");
+        showToast(response?.data?.message || response?.message || "Trades exported successfully!", "success");
       } else {
-        showToast("Failed to export data", "error");
+        showToast(response?.data?.message || response?.message || "Failed to export data", "error");
       }
     } catch (error) {
       console.error("Export failed:", error.message);
-      showToast("Export failed. Please try again.", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Export failed. Please try again.", "error");
     }
   };
 
@@ -135,11 +135,11 @@ const TradesDashboard = () => {
           // { count: 16, label: "Disputes", change: "Since last month", icon: "../images/flag.svg" },
         ]);
       } else {
-        showToast("Failed to fetch trade summary", "warning");
+        showToast(response?.data?.message || response?.message || "Failed to fetch trade summary", "warning");
       }
     } catch (error) {
       console.error("Error fetching status summary:", error.message);
-      showToast("Error fetching trade summary", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching trade summary", "error");
     }
   };
 

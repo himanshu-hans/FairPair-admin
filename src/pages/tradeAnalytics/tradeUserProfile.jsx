@@ -47,11 +47,11 @@ const TradeUserProfile = () => {
       if (response.status === 200 || response.status === 201) {
         setUserData(response.data?.data);
       } else {
-        showToast("Failed to load user profile", "error");
+        showToast(response?.data?.message || response?.message || "Failed to load user profile", "error");
       }
     } catch (error) {
       console.error("Error fetching user profile:", error.message);
-      showToast("Error fetching user profile", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching user profile", "error");
     }
   };
 
@@ -67,12 +67,12 @@ const TradeUserProfile = () => {
       if (response.status === 200 || response.status === 201) {
         setUserTrades(response.data?.data || { data: [] });
       } else {
-        showToast("Failed to fetch user trades", "error");
+        showToast(response?.data?.message || response?.message || "Failed to fetch user trades", "error");
       }
     } catch (error) {
       console.error("Error fetching user trades:", error.message);
       setUserTrades({ data: [] });
-      showToast("Error fetching user trades", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching user trades", "error");
     } finally {
       setLoading(false);
     }
