@@ -34,7 +34,7 @@ const UserTable = () => {
       }
     } catch (error) {
       console.error("Error fetching users:", error.message);
-      showToast("Error fetching users", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching users", "error");
       setUserList(null);
     } finally {
       setLoading(false);
@@ -54,13 +54,13 @@ const UserTable = () => {
       const response = await del(`user/${userId}`);
 
       if (response.status === 200 || response.status === 201) {
-        showToast("User deleted successfully!", "success");
+        showToast(response?.data?.message || response?.message || "User deleted successfully!", "success");
         fetchUserList();
       }
     } catch (error) {
       console.error("Error deleting user:", error.message);
       showToast(
-        error.response?.data?.message || "Error deleting user",
+        error.response?.data?.message || error.response?.message || error.message || "Error deleting user",
         "error"
       );
     } finally {
@@ -118,7 +118,7 @@ const UserTable = () => {
                   <td>  
                     <div className="user-info">
                       <img
-                        src={u?.profile_image || `images/profile_img.svg`}
+                        src={u?.profile_image || "images/dummy_image.svg"}
                         alt={u?.username || "User"}
                       />
                       <span>{u?.username || "N/A"}</span>

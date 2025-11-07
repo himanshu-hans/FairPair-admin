@@ -31,7 +31,7 @@ axiosInstance.interceptors.response.use(
     
     if (response && response.status === 401) {
       store.dispatch(logout());
-      window.location.replace('/login');
+      window.location.replace('/');
     }
     
     return Promise.reject(error);

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import "./Profile.css";
 import { FaPencilAlt } from "react-icons/fa";
 import { showToast } from "../../components/showToast";
 import { get, patch } from "../../hooks/services/services";
+import { updateUserProfile } from "../../components/authRedux/authSlice";
 
 const Profile = () => {
+  const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth?.userId);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -47,7 +49,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      showToast(error.message || "Failed to load profile data", "error");
+      showToast(error.response?.message || error.response?.data?.message || "Failed to load profile data", "error");
     } finally {
       setLoading(false);
     }
@@ -70,13 +72,17 @@ const Profile = () => {
     const response = await patch(`user/updateprofile/${userId}`, payload);
 
     if (response.status === 200 || response.status === 201) {
-      showToast("Profile updated successfully!", "success");
+      showToast( response?.data?.message || response?.message || "Profile updated successfully!", "success");
+
+      dispatch(updateUserProfile({ 
+          username: formData.fullName, }));
+
       setIsEditing(false);
       fetchUserProfile(); 
     }
   } catch (error) {
     console.error("Error updating profile:", error);
-    showToast(error.message || "Failed to update profile", "error");
+    showToast(error.response?.message  || error.response?.data?.message  || "Failed to update profile", "error");
   } finally {
     setLoading(false);
   }
@@ -103,7 +109,7 @@ const Profile = () => {
           {/* Header */}
           <div className="d-flex align-items-center">
             <img
-              src={formData.profileImage}
+              src={formData.profileImage || "images/dummy_image.svg"}
               alt="Profile"
               className="me-3 profile-img"
             />

@@ -30,7 +30,7 @@ const ReportTable = () => {
       }
     } catch (error) {
       console.error("Error fetching reports:", error.message);
-      showToast("Error fetching reports", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching reports", "error");
       setUserReportList(null);
     } finally {
       setLoading(false);
@@ -47,13 +47,13 @@ const ReportTable = () => {
       const response = await patch(`report-trade/${reportId}`, payload);
 
       if (response.status === 200 || response.status === 201) {
-        showToast(`Report ${action.toLowerCase()} successfully!`, "success");
+        showToast(response?.data?.message || response?.message || "Reported successfully!", "success");
         fetchUserReportList();
       }
     } catch (error) {
       console.error(`Error updating report:`, error.message);
       showToast(
-        error.response?.data?.message || `Error processing report`,
+        error.response?.data?.message || error.response?.message || error.message || "Error processing report",
         "error"
       );
     } finally {
@@ -123,7 +123,7 @@ const ReportTable = () => {
                 <td>
                   <div className="user-info">
                     <img
-                      src={report?.reportedByProfileImage || `images/profile_img.svg`}
+                      src={report?.reportedByProfileImage || "images/dummy_image.svg"}
                       alt={report?.reportedBy || "User"}
                     />
                     <span>{report?.reportedBy || "N/A"}</span>
@@ -133,7 +133,7 @@ const ReportTable = () => {
                 <td>
                   <div className="user-info">
                     <img
-                      src={report?.reportedAgainstProfileImage || `images/profile_img.svg`}
+                      src={report?.reportedAgainstProfileImage || "images/dummy_image.svg"}
                       alt={report?.reportedAgainst || "User"}
                     />
                     <span>{report?.reportedAgainst || "N/A"}</span>

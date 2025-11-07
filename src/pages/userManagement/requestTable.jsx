@@ -26,11 +26,11 @@ function RequestTable() {
       const response = await get(`user/all_users_Request?page=${currentPage}`);
       
       if (response.status === 200 || response.status === 201) {
-        setUserRequestList(response.data?.data);
+        setUserRequestList(response.data?.data || response?.data);
       }
     } catch (error) {
       console.error("Error fetching user requests:", error.message);
-      showToast("Error fetching user requests", "error");
+      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching user requests", "error");
       setUserRequestList(null);
     } finally {
       setLoading(false);
@@ -56,7 +56,7 @@ function RequestTable() {
     } catch (error) {
       console.error(`Error updating request status:`, error.message);
       showToast(
-        error.response?.data?.message || `Error ${status === "approved" ? "accepting" : "rejecting"} user`,
+        error.response?.data?.message || error.response?.message || error.message || `Error ${status === "approved" ? "accepting" : "rejecting"} user`,
         "error"
       );
     } finally {
@@ -108,7 +108,7 @@ function RequestTable() {
                 <td>
                   <div className="user-info">
                     <img
-                      src={request?.profile_image || `images/profile_img.svg`}
+                      src={request?.profile_image || "images/dummy_image.svg"}
                       alt={request?.username || "User"}
                     />
                     <span>{request?.username || "N/A"}</span>
