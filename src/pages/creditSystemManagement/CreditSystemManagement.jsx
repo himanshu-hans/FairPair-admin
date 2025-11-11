@@ -36,7 +36,7 @@ const CreditSystemManagement = () => {
       const response = await get("credit/allCredit");
 
       if (response.status === 200 || response.status === 201) {
-        setCreditData(response.data?.data);
+        setCreditData(response.data?.data?.data);
       }
     } catch (error) {
       console.error("Error fetching credit data:", error.message);

@@ -7,6 +7,7 @@ const ReportTable = () => {
   const [userReportList, setUserReportList] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState({});
 
   const nextPage = () => {
     if (currentPage < userReportList?.totalPages) {
@@ -37,18 +38,38 @@ const ReportTable = () => {
     }
   };
 
+  // Get available actions based on current status
+  const getActionsForStatus = (status) => {
+    const normalizedStatus = status?.toLowerCase();
+    
+    switch (normalizedStatus) {
+      case 'pending':
+        return ['Investigate', 'Discard'];
+      case 'under review':
+        return ['Resolve', 'Dismiss'];
+      case 'resolved':
+        return ['Reopen'];
+      case 'dismissed':
+        return ['Reopen'];
+      default:
+        return ['Investigate', 'Discard']; // Default actions for unknown status
+    }
+  };
+
   const handleReportAction = async (reportId, action) => {
-    setLoading(true);
+    // Set loading for specific report and action
+    setActionLoading(prev => ({ ...prev, [`${reportId}-${action}`]: true }));
+    
     try {
       const payload = {
-        status: action.toLowerCase(), // "investigate", "discard", or "resolved"
+        action: action, // Send action as-is (Investigate, Dismiss, Resolve, Reopen)
       };
 
-      const response = await patch(`report-trade/${reportId}`, payload);
+      const response = await patch(`report-trade/update_report/${reportId}`, payload);
 
       if (response.status === 200 || response.status === 201) {
-        showToast(response?.data?.message || response?.message || "Reported successfully!", "success");
-        fetchUserReportList();
+        showToast(response?.data?.message || response?.message || "Action completed successfully!", "success");
+        fetchUserReportList(); // Refresh the list to get updated statuses
       }
     } catch (error) {
       console.error(`Error updating report:`, error.message);
@@ -57,7 +78,7 @@ const ReportTable = () => {
         "error"
       );
     } finally {
-      setLoading(false);
+      setActionLoading(prev => ({ ...prev, [`${reportId}-${action}`]: false }));
     }
   };
 
@@ -67,10 +88,29 @@ const ReportTable = () => {
         return 'action-btn investigate-btn';
       case 'discard':
         return 'action-btn discard-btn';
-      case 'resolved':
+      case 'resolve':
         return 'action-btn resolved-btn';
+      case 'dismiss':
+        return 'action-btn dismiss-btn';
+      case 'reopen':
+        return 'action-btn reopen-btn';
       default:
         return 'action-btn';
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return 'status-badge status-pending';
+      case 'under review':
+        return 'status-badge status-under-review';
+      case 'resolved':
+        return 'status-badge status-resolved';
+      case 'dismissed':
+        return 'status-badge status-dismissed';
+      default:
+        return 'status-badge';
     }
   };
 
@@ -104,7 +144,7 @@ const ReportTable = () => {
             <th>Reported By</th>
             <th>Reported Against</th>
             <th>Reason</th>
-            <th>Comments</th>
+            <th>Status</th>
             <th>Raised On</th>
             <th>Actions</th>
           </tr>
@@ -118,58 +158,58 @@ const ReportTable = () => {
               </td>
             </tr>
           ) : userReportList?.users?.length > 0 ? (
-            userReportList.users.map((report, index) => (
-              <tr key={report.id || index}>
-                <td>
-                  <div className="user-info">
-                    <img
-                      src={report?.reportedByProfileImage || "images/dummy_image.svg"}
-                      alt={report?.reportedBy || "User"}
-                    />
-                    <span>{report?.reportedBy || "N/A"}</span>
-                  </div>
-                </td>
+            userReportList.users.map((report, index) => {
+              const availableActions = getActionsForStatus(report?.status);
+              
+              return (
+                <tr key={report.id || index}>
+                  <td>
+                    <div className="user-info">
+                      <img
+                        src={report?.reportedByProfileImage || "images/dummy_image.svg"}
+                        alt={report?.reportedBy || "User"}
+                      />
+                      <span>{report?.reportedBy || "N/A"}</span>
+                    </div>
+                  </td>
 
-                <td>
-                  <div className="user-info">
-                    <img
-                      src={report?.reportedAgainstProfileImage || "images/dummy_image.svg"}
-                      alt={report?.reportedAgainst || "User"}
-                    />
-                    <span>{report?.reportedAgainst || "N/A"}</span>
-                  </div>
-                </td>
+                  <td>
+                    <div className="user-info">
+                      <img
+                        src={report?.reportedAgainstProfileImage || "images/dummy_image.svg"}
+                        alt={report?.reportedAgainst || "User"}
+                      />
+                      <span>{report?.reportedAgainst || "N/A"}</span>
+                    </div>
+                  </td>
 
-                <td className='textGrey'>{report?.report || "N/A"}</td>
-                <td className='textGrey'>{report?.comments || "N/A"}</td>
-                <td className='textGrey'>{formatDate(report?.created_at)}</td>
+                  <td className='textGrey'>{report?.report || "N/A"}</td>
+                  <td>
+                    <span className={getStatusBadgeClass(report?.status)}>
+                      {report?.status || "N/A"}
+                    </span>
+                  </td>
+                  <td className='textGrey'>{formatDate(report?.created_at)}</td>
 
-                <td className="actions-cell">
-                  {report?.status === 'resolved' ? (
-                    <button className={getActionButtonClass('resolved')} disabled>
-                      Resolved
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        className={getActionButtonClass('investigate')}
-                        onClick={() => handleReportAction(report.id, 'investigate')}
-                        disabled={loading}
-                      >
-                        Investigate
-                      </button>
-                      <button
-                        className={getActionButtonClass('discard')}
-                        onClick={() => handleReportAction(report.id, 'discard')}
-                        disabled={loading}
-                      >
-                        Discard
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))
+                  <td className="actions-cell">
+                    {availableActions.map((action) => {
+                      const isActionLoading = actionLoading[`${report.id}-${action}`];
+                      
+                      return (
+                        <button
+                          key={action}
+                          className={getActionButtonClass(action)}
+                          onClick={() => handleReportAction(report.id, action)}
+                          disabled={isActionLoading || loading}
+                        >
+                          {isActionLoading ? 'Processing...' : action}
+                        </button>
+                      );
+                    })}
+                  </td>
+                </tr>
+              );
+            })
           ) : (
             <tr>
               <td colSpan="6" className="text-center text-muted py-4">

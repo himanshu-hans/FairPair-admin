@@ -40,7 +40,7 @@
   left: 0;
   width: 100%;
   height: 3px;
-  background-color: #030303; 
+  background-color: #030303;
   border-radius: 2px;
 }
 
@@ -78,6 +78,7 @@
   margin-left: 6px;
   font-weight: 500;
 }
+
 .credit-count {
   font-size: 18px;
   font-weight: 600;
@@ -93,6 +94,7 @@
   margin-left: 8px;
   font-weight: 500;
 }
+
 .credit-count span:nth-child(2) {
   background-color: rgba(156, 39, 176, 1);
   color: rgba(246, 247, 248, 1);
@@ -102,6 +104,7 @@
   margin-left: 8px;
   font-weight: 500;
 }
+
 .credit-count span:nth-child(3) {
   background-color: rgba(97, 97, 97, 1);
   color: rgba(246, 247, 248, 1);
@@ -129,8 +132,8 @@
   vertical-align: middle;
 }
 
-.textGrey{
-    color: rgba(26, 26, 26, 0.72) !important;
+.textGrey {
+  color: rgba(26, 26, 26, 0.72) !important;
 }
 
 .user-info {
@@ -165,6 +168,7 @@
   transform: scale(1.1);
   opacity: 0.8;
 }
+
 /* Registration Status */
 .status {
   display: inline-flex;
@@ -210,7 +214,7 @@
   justify-content: space-between;
   align-items: center;
   /* margin-top: 18px; */
-padding: 0 24px 30px;
+  padding: 0 24px 30px;
 }
 
 .page-btn {
@@ -344,98 +348,143 @@ padding: 0 24px 30px;
 }
 
 .action-buttons {
-    display: flex;
-    gap: 15px;
+  display: flex;
+  gap: 15px;
 }
 
 .action-buttons button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    width: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  width: 50%;
 }
 
 .accept-btn {
-    background-color: #fff; 
-    color: rgba(26, 26, 26, 0.8); 
-    border: 1px solid rgba(26, 26, 26, 0.16); 
+  background-color: #fff;
+  color: rgba(26, 26, 26, 0.8);
+  border: 1px solid rgba(26, 26, 26, 0.16);
 }
 
 .accept-btn:hover {
-    background-color: #dcfce7;
-    color: rgba(34, 132, 41, 1); 
+  background-color: #dcfce7;
+  color: rgba(34, 132, 41, 1);
 }
 
 .reject-btn {
-    background-color: #fff;
-    color: rgba(26, 26, 26, 0.8); 
-    border: 1px solid rgba(26, 26, 26, 0.16); 
+  background-color: #fff;
+  color: rgba(26, 26, 26, 0.8);
+  border: 1px solid rgba(26, 26, 26, 0.16);
 }
 
 .reject-btn:hover {
-    background-color: #fee2e2; 
-    color: rgba(183, 55, 46, 1);
+  background-color: #fee2e2;
+  color: rgba(183, 55, 46, 1);
 }
 
 .action-buttons button::before {
-    margin-right: 6px;
-    font-size: 16px;
+  margin-right: 6px;
+  font-size: 16px;
 }
 
 .accept-btn::before {
-    content: '✓'; 
+  content: '✓';
 }
 
 .reject-btn::before {
-    content: '✕'; 
+  content: '✕';
 }
 
 .actions-cell {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 .action-btn {
-    border: 1px solid rgba(26, 26, 26, 0.16);
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    margin-right: 8px; 
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  border: 1px solid rgba(26, 26, 26, 0.16);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 8px;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .investigate-btn {
-    background-color: transparent;
-    color: rgba(62, 53, 223, 1); 
-    /* border-color: #007bff; */
-    width: 50%;
+  background-color: transparent;
+  color: rgba(62, 53, 223, 1);
+  /* border-color: #007bff; */
+  width: 50%;
 }
 
 .investigate-btn:hover {
-    background-color: #e9f5ff;
+  background-color: #e9f5ff;
 }
 
 .discard-btn {
-    background-color: transparent;
-    color: rgba(183, 55, 46, 1);
-    /* border-color: #dc3545;   */
-    width: 50%;
+  background-color: transparent;
+  color: rgba(183, 55, 46, 1);
+  /* border-color: #dc3545;   */
+  width: 50%;
 }
 
 .discard-btn:hover {
-    background-color: #fce4e6; 
+  background-color: #fce4e6;
 }
 
 .resolved-btn {
-    background-color: rgba(34, 132, 41, 0.08);
-    color: rgba(34, 132, 41, 1);
-    border-color: transparent;
-    width: 100%;
-    /* Resolved is a single solid button, no hover needed */
+  background-color: transparent;
+  color: rgba(34, 132, 41, 1);
+  width: 50%;
+}
+
+.resolved-btn:hover {
+  background-color: hsla(124, 75%, 76%, 0.773);
+}
+
+.reopen-btn {
+  background-color: transparent;
+  color: #1A1A1A;
+  width: 100%;
+}
+
+.reopen-btn:hover {
+  background-color: #d8cef3;
+}
+
+.dismiss-btn {
+  background-color: transparent;
+  color: rgb(206, 45, 34);
+  width: 50%;
+}
+
+.dismiss-btn:hover {
+  background-color: #f5c1c7;
+}
+
+/* Status Badges */
+.status-badge {
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  color: #7d7d7d;
+}
+
+.status-under-review {
+  color: #3E35DF;
+}
+
+.status-resolved {
+  color: #00c853;
+}
+
+.status-dismissed {
+  color: #d32f2f;
 }
