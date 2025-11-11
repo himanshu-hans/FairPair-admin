@@ -573,9 +573,9 @@ const TradesDashboard = () => {
               <div className="d-flex flex-wrap gap-3 mt-auto">
                 <button className="custom-badge">Suspend User</button>
                 <button className="custom-badge">Refund Credits</button>
-                <button className="custom-badge">Reopen Case</button>
+                {/* <button className="custom-badge">Reopen Case</button>
                 <button className="custom-badge">Close Dispute</button>
-                <button className="custom-badge">Issue Warning</button>
+                <button className="custom-badge">Issue Warning</button> */}
               </div>
             </div>
           </div>
