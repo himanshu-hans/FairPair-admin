@@ -47,11 +47,22 @@ const TradeUserProfile = () => {
       if (response.status === 200 || response.status === 201) {
         setUserData(response.data?.data);
       } else {
-        showToast(response?.data?.message || response?.message || "Failed to load user profile", "error");
+        showToast(
+          response?.data?.message ||
+            response?.message ||
+            "Failed to load user profile",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Error fetching user profile:", error.message);
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching user profile", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching user profile",
+        "error"
+      );
     }
   };
 
@@ -67,12 +78,23 @@ const TradeUserProfile = () => {
       if (response.status === 200 || response.status === 201) {
         setUserTrades(response.data?.data || { data: [] });
       } else {
-        showToast(response?.data?.message || response?.message || "Failed to fetch user trades", "error");
+        showToast(
+          response?.data?.message ||
+            response?.message ||
+            "Failed to fetch user trades",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Error fetching user trades:", error.message);
       setUserTrades({ data: [] });
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching user trades", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching user trades",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -134,7 +156,7 @@ const TradeUserProfile = () => {
         <div className="d-flex align-items-center gap-3">
           <img
             src={
-              userData?.profile_image || `https://i.pravatar.cc/40?img=${10}`
+              userData?.profile_image || "images/dummy_image.svg"
             }
             alt="profile"
             className="rounded-circle profile-img img-fluid"
@@ -179,6 +201,12 @@ const TradeUserProfile = () => {
             {userData?.planName?.toUpperCase() || "-"}
           </span>
         </div>
+
+        {userData?.isSuspended && (
+          <div className="suspended-status-background">
+            <span className="fw-medium text-dark">Suspended account</span>
+          </div>
+        )}
       </div>
 
       {/* Stats Cards */}

@@ -438,12 +438,12 @@
 
 .resolved-btn {
   background-color: transparent;
-  color: rgba(34, 132, 41, 1);
+  color: #228429;
   width: 50%;
 }
 
 .resolved-btn:hover {
-  background-color: hsla(124, 75%, 76%, 0.773);
+  background-color: #94f09ac5;
 }
 
 .reopen-btn {
@@ -482,9 +482,84 @@
 }
 
 .status-resolved {
-  color: #00c853;
+  color: #228429;
 }
 
 .status-dismissed {
   color: #d32f2f;
+}
+
+
+
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+/* suspend and reactive account functionality css*/
+.delete-modal-content {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.delete-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: #374151;
+}
+
+.delete-modal-message {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.delete-modal-button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  gap: 10px;
+  margin-top: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.delete-modal-button-cancel {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.delete-modal-button-cancel:hover {
+  background-color: #f9fafb;
+}
+
+.delete-modal-button-confirm {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+.delete-modal-button-confirm:hover {
+  background-color: #dc2626;
 }
