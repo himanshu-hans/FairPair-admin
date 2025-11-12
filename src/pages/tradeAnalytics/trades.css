@@ -220,6 +220,17 @@
   transform: scale(0.98);
 } */
 
+.suspended-status-background {
+  padding: 12px 16px;
+  background-color: #3E35DF;
+  color: #FAFAFA;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0px;
+}
+
 .profile-img {
   width: 80px;
   height: auto;

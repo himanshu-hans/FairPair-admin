@@ -301,20 +301,23 @@ const TradesDashboard = () => {
               </tr>
             ) : tradesData?.trades?.length > 0 ? (
               tradesData.trades.map((trade, index) => (
-                <tr key={trade.id || index}>
+                <tr key={trade.id || index}
+                  onClick={() => handleRowClick(trade)}
+                  className="clickable-row"
+                >
                   <td
-                    onClick={() => handleRowClick(trade)}
-                    className="clickable-row"
+                    // onClick={() => handleRowClick(trade)}
+                    // className="clickable-row"
                   >
                     {trade.publishTradeId || "—"}
                   </td>
                   <td
-                    onClick={() =>
-                      navigate("/trade-user-profile", {
-                        state: { userId: trade.userId },
-                      })
-                    }
-                    className="clickable-row"
+                    // onClick={() =>
+                    //   navigate("/trade-user-profile", {
+                    //     state: { userId: trade.userId },
+                    //   })
+                    // }
+                    // className="clickable-row"
                   >
                     <div className="user-info">
                       <img
@@ -573,9 +576,9 @@ const TradesDashboard = () => {
               <div className="d-flex flex-wrap gap-3 mt-auto">
                 <button className="custom-badge">Suspend User</button>
                 <button className="custom-badge">Refund Credits</button>
-                {/* <button className="custom-badge">Reopen Case</button>
+                <button className="custom-badge">Reopen Case</button>
                 <button className="custom-badge">Close Dispute</button>
-                <button className="custom-badge">Issue Warning</button> */}
+                <button className="custom-badge">Issue Warning</button>
               </div>
             </div>
           </div>

@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import "../userManagement/users.css";
 import { FaCheckCircle, FaClock, FaTimesCircle } from "react-icons/fa";
-import UserEditModel from "./userEditModel";
-import { get, del } from "../../hooks/services/services";
+import { get, del, patch } from "../../hooks/services/services";
 import { showToast } from "../../components/showToast";
+import { useNavigate } from "react-router-dom";
 
 const UserTable = () => {
-  const [userEditModalOpen, setUserEditModalOpen] = useState(false);
   const [userList, setUserList] = useState(null);
-  const [userToEdit, setUserToEdit] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [userToAction, setUserToAction] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const navigate = useNavigate();
 
   const nextPage = () => {
     if (currentPage < userList?.totalPages) {
@@ -34,54 +36,61 @@ const UserTable = () => {
       }
     } catch (error) {
       console.error("Error fetching users:", error.message);
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching users", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching users",
+        "error"
+      );
       setUserList(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteUser = async (userId, username) => {
-    // Confirmation dialog
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete user "${username}"?`
-    );
+  const handleActionClick = (user) => {
+    setUserToAction(user);
+    setIsActionModalOpen(true);
+  };
 
-    if (!confirmDelete) return;
+  const confirmAction = async () => {
+    if (!userToAction) return;
 
-    setLoading(true);
+    setActionLoading(true);
     try {
-      const response = await del(`user/${userId}`);
+      const response = await patch(
+        `user/toggle-suspend/${userToAction.id}`,
+        {
+          suspend: userToAction.isSuspended ? "false" : "true",
+        }
+      );
 
       if (response.status === 200 || response.status === 201) {
-        showToast(response?.data?.message || response?.message || "User deleted successfully!", "success");
-        fetchUserList();
+        showToast(
+            `User ${userToAction.isSuspended ? "reactivated" : "suspended"} successfully`,
+          "success"
+        );
+        fetchUserList(); // Refresh the user list
       }
     } catch (error) {
-      console.error("Error deleting user:", error.message);
+      console.error("Error toggling user status:", error.message);
       showToast(
-        error.response?.data?.message || error.response?.message || error.message || "Error deleting user",
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error updating user status",
         "error"
       );
     } finally {
-      setLoading(false);
+      setActionLoading(false);
+      setIsActionModalOpen(false);
+      setUserToAction(null);
     }
-  };
-
-  const openModel = (u) => {
-    setUserToEdit(u);
-    setUserEditModalOpen(true);
-  };
-
-  const closeModelAndRefresh = () => {
-    setUserEditModalOpen(false);
-    setUserToEdit(null);
-    fetchUserList(); // Refresh list after editing
   };
 
   useEffect(() => {
     fetchUserList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   return (
@@ -101,21 +110,28 @@ const UserTable = () => {
               <th>Registration</th>
               <th>Phone number</th>
               <th>Year</th>
-              <th>Actions</th>
+              <th>Action</th>
             </tr>
           </thead>
 
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="6" className="text-center text-muted py-4">  
+                <td colSpan="6" className="text-center text-muted py-4">
                   Loading users...
                 </td>
               </tr>
             ) : userList?.users?.length > 0 ? (
               userList.users.map((u, index) => (
-                <tr key={u.id || index}>  
-                  <td>  
+                <tr key={u.id || index}>
+                  <td
+                    onClick={() =>
+                      navigate("/trade-user-profile", {
+                        state: { userId: u.id },
+                      })
+                    }
+                    className="clickable-row"
+                  >
                     <div className="user-info">
                       <img
                         src={u?.profile_image || "images/dummy_image.svg"}
@@ -158,28 +174,29 @@ const UserTable = () => {
 
                   <td>
                     <div className="action">
-                      <img
-                        src="/images/pen_edit.svg"
-                        alt="Edit"
-                        className="action-icon"
-                        onClick={() => openModel(u)}
-                        style={{
-                          cursor: loading ? "not-allowed" : "pointer",
-                          opacity: loading ? 0.5 : 1,
-                        }}
-                      />
-                      <img
-                        src="/images/delete.svg"
-                        alt="Delete"
-                        className="action-icon"
-                        onClick={() =>
-                          !loading && handleDeleteUser(u.id, u.username)
-                        }
-                        style={{
-                          cursor: loading ? "not-allowed" : "pointer",
-                          opacity: loading ? 0.5 : 1,
-                        }}
-                      />
+                      {u?.isSuspended ? (
+                        <img
+                          src="/images/re_activate_user.svg"
+                          alt="Reactivate"
+                          className="action-icon"
+                          onClick={() => handleActionClick(u)}
+                          style={{
+                            cursor: actionLoading ? "not-allowed" : "pointer",
+                            opacity: actionLoading ? 0.5 : 1,
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src="/images/suspend_user.svg"
+                          alt="Suspend"
+                          className="action-icon"
+                          onClick={() => handleActionClick(u)}
+                          style={{
+                            cursor: actionLoading ? "not-allowed" : "pointer",
+                            opacity: actionLoading ? 0.5 : 1,
+                          }}
+                        />
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -215,13 +232,49 @@ const UserTable = () => {
         </div>
       </div>
 
-      <UserEditModel
-        setUserEditModalOpen={setUserEditModalOpen}
-        userEditModalOpen={userEditModalOpen}
-        userToEdit={userToEdit}
-        onClose={closeModelAndRefresh}
-        refreshUserList={fetchUserList}
-      />
+      {/* Suspend/Reactivate Modal */}
+      {isActionModalOpen && userToAction && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal-content">
+            <h3 className="delete-modal-title">
+              {userToAction.isSuspended ? "Reactivate User" : "Suspend User"}
+            </h3>
+            <p className="delete-modal-message">
+              Are you sure you want to{" "}
+              {userToAction.isSuspended ? "reactivate" : "suspend"}{" "}
+              <strong>{userToAction.username}</strong>?
+            </p>
+            <div className="delete-modal-actions">
+              <button
+                onClick={() => {
+                  setIsActionModalOpen(false);
+                  setUserToAction(null);
+                }}
+                className="delete-modal-button delete-modal-button-cancel"
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAction}
+                className="delete-modal-button delete-modal-button-confirm"
+                disabled={actionLoading}
+                style={{
+                  backgroundColor: userToAction.isSuspended
+                    ? "#007bff"
+                    : "#d32f2f",
+                }}
+              >
+                {actionLoading
+                  ? "Processing..."
+                  : userToAction.isSuspended
+                  ? "Reactivate"
+                  : "Suspend"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
