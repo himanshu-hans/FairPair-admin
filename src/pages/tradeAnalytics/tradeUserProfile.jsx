@@ -155,9 +155,7 @@ const TradeUserProfile = () => {
         />
         <div className="d-flex align-items-center gap-3">
           <img
-            src={
-              userData?.profile_image || "images/dummy_image.svg"
-            }
+            src={userData?.profile_image || "images/dummy_image.svg"}
             alt="profile"
             className="rounded-circle profile-img img-fluid"
           />
@@ -342,12 +340,17 @@ const TradeUserProfile = () => {
                     <div className="user-info">
                       <img
                         src={
-                          trade.tradeWithProfileImg ||
-                          `https://i.pravatar.cc/40?img=${index + 10}`
+                          trade.tradeWithProfileImg || "images/dummy_image.svg"
                         }
                         alt={trade.tradeWith || "user"}
                       />
-                      <span>{trade.tradeWith || "—"}</span>
+                      <span>
+                        {trade?.tradeWith
+                          ? trade.tradeWith
+                          : trade?.tradeWithUserEmail
+                          ? trade.tradeWithUserEmail.slice(0, 2).toUpperCase()
+                          : "—"}
+                      </span>
                     </div>
                   </td>
                   <td className="textGrey">{trade.category || "—"}</td>

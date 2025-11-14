@@ -89,7 +89,7 @@
 }
 
 .custom-select-dropdown {
-  position: absolute;
+  /* position: absolute; */
   z-index: 10;
   background-color: #fff;
   border: 1px solid rgba(26, 26, 26, 0.64);

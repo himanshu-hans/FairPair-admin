@@ -24,13 +24,19 @@ function RequestTable() {
     setLoading(true);
     try {
       const response = await get(`user/all_users_Request?page=${currentPage}`);
-      
+
       if (response.status === 200 || response.status === 201) {
         setUserRequestList(response.data?.data || response?.data);
       }
     } catch (error) {
       console.error("Error fetching user requests:", error.message);
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching user requests", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching user requests",
+        "error"
+      );
       setUserRequestList(null);
     } finally {
       setLoading(false);
@@ -44,11 +50,16 @@ function RequestTable() {
         status: status,
       };
 
-      const response = await patch(`user/registration_request/${userId}`, payload);
+      const response = await patch(
+        `user/registration_request/${userId}`,
+        payload
+      );
 
       if (response.status === 200 || response.status === 201) {
         showToast(
-          `User ${status === "approved" ? "accepted" : "rejected"} successfully!`,
+          `User ${
+            status === "approved" ? "accepted" : "rejected"
+          } successfully!`,
           "success"
         );
         fetchUserRequestList();
@@ -56,7 +67,10 @@ function RequestTable() {
     } catch (error) {
       console.error(`Error updating request status:`, error.message);
       showToast(
-        error.response?.data?.message || error.response?.message || error.message || `Error ${status === "approved" ? "accepting" : "rejecting"} user`,
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          `Error ${status === "approved" ? "accepting" : "rejecting"} user`,
         "error"
       );
     } finally {
@@ -111,12 +125,16 @@ function RequestTable() {
                       src={request?.profile_image || "images/dummy_image.svg"}
                       alt={request?.username || "User"}
                     />
-                    <span>{request?.username || "N/A"}</span>
+                    <span>
+                      {request?.username || request?.useremail
+                        ? request.useremail.slice(0, 2).toUpperCase()
+                        : ""}
+                    </span>
                   </div>
                 </td>
-                <td className="textGrey">{request?.useremail || "N/A"}</td>
-                <td className="textGrey">{request?.phoneNumber || "N/A"}</td>
-                <td className="textGrey">{request?.year || "N/A"}</td>
+                <td className="textGrey">{request?.useremail || "-"}</td>
+                <td className="textGrey">{request?.phoneNumber || "-"}</td>
+                <td className="textGrey">{request?.year || "-"}</td>
                 <td>
                   <div className="action-buttons">
                     <button
