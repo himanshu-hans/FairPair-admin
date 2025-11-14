@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import "../userManagement/users.css";
-import { get, patch } from '../../hooks/services/services';
+import { get, patch } from "../../hooks/services/services";
 import { showToast } from "../../components/showToast";
 
 const ReportTable = () => {
@@ -31,7 +31,13 @@ const ReportTable = () => {
       }
     } catch (error) {
       console.error("Error fetching reports:", error.message);
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching reports", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching reports",
+        "error"
+      );
       setUserReportList(null);
     } finally {
       setLoading(false);
@@ -41,88 +47,102 @@ const ReportTable = () => {
   // Get available actions based on current status
   const getActionsForStatus = (status) => {
     const normalizedStatus = status?.toLowerCase();
-    
+
     switch (normalizedStatus) {
-      case 'pending':
-        return ['Investigate', 'Discard'];
-      case 'under review':
-        return ['Resolve', 'Dismiss'];
-      case 'resolved':
-        return ['Reopen'];
-      case 'dismissed':
-        return ['Reopen'];
+      case "pending":
+        return ["Investigate", "Discard"];
+      case "under review":
+        return ["Resolve", "Dismiss"];
+      case "resolved":
+        return ["Reopen"];
+      case "dismissed":
+        return ["Reopen"];
       default:
-        return ['Investigate', 'Discard']; // Default actions for unknown status
+        return ["Investigate", "Discard"]; // Default actions for unknown status
     }
   };
 
   const handleReportAction = async (reportId, action) => {
     // Set loading for specific report and action
-    setActionLoading(prev => ({ ...prev, [`${reportId}-${action}`]: true }));
-    
+    setActionLoading((prev) => ({ ...prev, [`${reportId}-${action}`]: true }));
+
     try {
       const payload = {
         action: action, // Send action as-is (Investigate, Dismiss, Resolve, Reopen)
       };
 
-      const response = await patch(`report-trade/update_report/${reportId}`, payload);
+      const response = await patch(
+        `report-trade/update_report/${reportId}`,
+        payload
+      );
 
       if (response.status === 200 || response.status === 201) {
-        showToast(response?.data?.message || response?.message || "Action completed successfully!", "success");
+        showToast(
+          response?.data?.message ||
+            response?.message ||
+            "Action completed successfully!",
+          "success"
+        );
         fetchUserReportList(); // Refresh the list to get updated statuses
       }
     } catch (error) {
       console.error(`Error updating report:`, error.message);
       showToast(
-        error.response?.data?.message || error.response?.message || error.message || "Error processing report",
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error processing report",
         "error"
       );
     } finally {
-      setActionLoading(prev => ({ ...prev, [`${reportId}-${action}`]: false }));
+      setActionLoading((prev) => ({
+        ...prev,
+        [`${reportId}-${action}`]: false,
+      }));
     }
   };
 
   const getActionButtonClass = (action) => {
     switch (action.toLowerCase()) {
-      case 'investigate':
-        return 'action-btn investigate-btn';
-      case 'discard':
-        return 'action-btn discard-btn';
-      case 'resolve':
-        return 'action-btn resolved-btn';
-      case 'dismiss':
-        return 'action-btn dismiss-btn';
-      case 'reopen':
-        return 'action-btn reopen-btn';
+      case "investigate":
+        return "action-btn investigate-btn";
+      case "discard":
+        return "action-btn discard-btn";
+      case "resolve":
+        return "action-btn resolved-btn";
+      case "dismiss":
+        return "action-btn dismiss-btn";
+      case "reopen":
+        return "action-btn reopen-btn";
       default:
-        return 'action-btn';
+        return "action-btn";
     }
   };
 
   const getStatusBadgeClass = (status) => {
     switch (status?.toLowerCase()) {
-      case 'pending':
-        return 'status-badge status-pending';
-      case 'under review':
-        return 'status-badge status-under-review';
-      case 'resolved':
-        return 'status-badge status-resolved';
-      case 'dismissed':
-        return 'status-badge status-dismissed';
+      case "pending":
+        return "status-badge status-pending";
+      case "under review":
+        return "status-badge status-under-review";
+      case "resolved":
+        return "status-badge status-resolved";
+      case "dismissed":
+        return "status-badge status-dismissed";
       default:
-        return 'status-badge';
+        return "status-badge";
     }
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return "-";
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      day: 'numeric',
-      month: 'short',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleString("en-US", {
+      day: "numeric",
+      month: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -160,41 +180,62 @@ const ReportTable = () => {
           ) : userReportList?.users?.length > 0 ? (
             userReportList.users.map((report, index) => {
               const availableActions = getActionsForStatus(report?.status);
-              
+
               return (
                 <tr key={report.id || index}>
                   <td>
                     <div className="user-info">
                       <img
-                        src={report?.reportedByProfileImage || "images/dummy_image.svg"}
+                        src={
+                          report?.reportedByProfileImage ||
+                          "images/dummy_image.svg"
+                        }
                         alt={report?.reportedBy || "User"}
                       />
-                      <span>{report?.reportedBy || "N/A"}</span>
+                      <span>
+                        {report?.reportedBy
+                          ? report.reportedBy
+                          : report?.reportedByUserEmail
+                          ? report.reportedByUserEmail.slice(0, 2).toUpperCase()
+                          : "-"}
+                      </span>
                     </div>
                   </td>
 
                   <td>
                     <div className="user-info">
                       <img
-                        src={report?.reportedAgainstProfileImage || "images/dummy_image.svg"}
+                        src={
+                          report?.reportedAgainstProfileImage ||
+                          "images/dummy_image.svg"
+                        }
                         alt={report?.reportedAgainst || "User"}
                       />
-                      <span>{report?.reportedAgainst || "N/A"}</span>
+                      <span>
+                        {report?.reportedAgainst
+                          ? report.reportedAgainst
+                          : report?.reportedAgainstUserEmail
+                          ? report.reportedAgainstUserEmail
+                              .slice(0, 2)
+                              .toUpperCase()
+                          : "-"}
+                      </span>
                     </div>
                   </td>
 
-                  <td className='textGrey'>{report?.report || "N/A"}</td>
+                  <td className="textGrey">{report?.report || "-"}</td>
                   <td>
                     <span className={getStatusBadgeClass(report?.status)}>
-                      {report?.status || "N/A"}
+                      {report?.status || "-"}
                     </span>
                   </td>
-                  <td className='textGrey'>{formatDate(report?.created_at)}</td>
+                  <td className="textGrey">{formatDate(report?.created_at)}</td>
 
                   <td className="actions-cell">
                     {availableActions.map((action) => {
-                      const isActionLoading = actionLoading[`${report.id}-${action}`];
-                      
+                      const isActionLoading =
+                        actionLoading[`${report.id}-${action}`];
+
                       return (
                         <button
                           key={action}
@@ -202,7 +243,7 @@ const ReportTable = () => {
                           onClick={() => handleReportAction(report.id, action)}
                           disabled={isActionLoading || loading}
                         >
-                          {isActionLoading ? 'Processing...' : action}
+                          {isActionLoading ? "Processing..." : action}
                         </button>
                       );
                     })}

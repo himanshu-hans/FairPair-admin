@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import "../tradeAnalytics/trades.css";
 import "../userManagement/users.css";
 import "../creditSystemManagement/creditSystemManagement.css";
-import { get } from "../../hooks/services/services";
+import { get, patch } from "../../hooks/services/services";
 import { showToast } from "../../components/showToast";
 import CreditPurchaseChart from "./creditPurchaseChart ";
+import ReferralPieChart from "./referralPieChart";
 
 const CreditSystemManagement = () => {
   const [creditData, setCreditData] = useState(null);
@@ -15,9 +16,16 @@ const CreditSystemManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [subscribersLoading, setSubscribersLoading] = useState(false);
+  const [referralData, setReferralData] = useState(null);
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalAction, setModalAction] = useState("");
+  const [selectedSubscriber, setSelectedSubscriber] = useState(null);
+  const [creditAmount, setCreditAmount] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   const yearOptions = Array.from(
-    { length: 6 },
+    { length: 5 },
     (_, i) => new Date().getFullYear() - i
   );
 
@@ -40,7 +48,13 @@ const CreditSystemManagement = () => {
       }
     } catch (error) {
       console.error("Error fetching credit data:", error.message);
-      showToast(error.message || error.response?.message || error.response?.data?.message || "Error fetching credit data", "error");
+      showToast(
+        error.message ||
+          error.response?.message ||
+          error.response?.data?.message ||
+          "Error fetching credit data",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -56,7 +70,13 @@ const CreditSystemManagement = () => {
       }
     } catch (error) {
       console.error("Error fetching subscribers:", error.message);
-      showToast(error.message || error.response?.message || error.response?.data?.message ||  "Error fetching subscribers", "error");
+      showToast(
+        error.message ||
+          error.response?.message ||
+          error.response?.data?.message ||
+          "Error fetching subscribers",
+        "error"
+      );
     } finally {
       setSubscribersLoading(false);
     }
@@ -72,7 +92,107 @@ const CreditSystemManagement = () => {
       }
     } catch (error) {
       console.error("Error fetching chart data:", error.message);
-      showToast(error.message || error.response?.message || error.response?.data?.message || "Error fetching chart data", "error");
+      showToast(
+        error.message ||
+          error.response?.message ||
+          error.response?.data?.message ||
+          "Error fetching chart data",
+        "error"
+      );
+    }
+  };
+
+  const fetchReferralDashboard = async () => {
+    setReferralLoading(true);
+    try {
+      const response = await get("invitations/dashboard/overview");
+
+      if (response.status === 200 || response.status === 201) {
+        setReferralData(response.data?.data);
+      }
+    } catch (error) {
+      console.error("Error fetching referral dashboard:", error.message);
+      showToast(
+        error.message ||
+          error.response?.message ||
+          error.response?.data?.message ||
+          "Error fetching referral data",
+        "error"
+      );
+    } finally {
+      setReferralLoading(false);
+    }
+  };
+
+  const handleActionClick = (action, subscriber) => {
+    setModalAction(action);
+    setSelectedSubscriber(subscriber);
+    setCreditAmount("");
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setModalAction("");
+    setSelectedSubscriber(null);
+    setCreditAmount("");
+  };
+
+  const handleConfirmAction = async () => {
+    if (!creditAmount || creditAmount <= 0) {
+      showToast("Please enter a valid credit amount", "error");
+      return;
+    }
+
+    if (
+      modalAction === "revoke" &&
+      parseInt(creditAmount) > (selectedSubscriber?.totalCredits || 0)
+    ) {
+      showToast(
+        "Revoke credit should not be greater than total credits",
+        "warning"
+      );
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const response = await patch(
+        `purchase/purchaseAction/${selectedSubscriber.userId}`,
+        {
+          action: modalAction,
+          amount: parseInt(creditAmount),
+        }
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        showToast(
+          `Credits ${
+            modalAction === "allocate" ? "allocated" : "revoked"
+          } successfully`,
+          "success"
+        );
+        handleCloseModal();
+        fetchSubscribers();
+        fetchCreditData();
+      }
+    } catch (error) {
+      console.error(
+        `Error ${
+          modalAction === "allocate" ? "allocating" : "revoking"
+        } credits:`,
+        error
+      );
+      showToast(
+        error.response?.data?.message ||
+          error.message ||
+          `Error ${
+            modalAction === "allocate" ? "allocating" : "revoking"
+          } credits`,
+        "error"
+      );
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -82,6 +202,7 @@ const CreditSystemManagement = () => {
 
   useEffect(() => {
     fetchCreditData();
+    fetchReferralDashboard();
   }, []);
 
   useEffect(() => {
@@ -106,12 +227,12 @@ const CreditSystemManagement = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -151,8 +272,7 @@ const CreditSystemManagement = () => {
       <div className="users-container mb-3">
         <div className="users-header justify-content-between">
           <div className="credit-count">
-            Subscribers{" "}
-            <span>{subscribersData?.summary?.bronze || 0}</span>{" "}
+            Subscribers <span>{subscribersData?.summary?.bronze || 0}</span>{" "}
             <span>{subscribersData?.summary?.silver || 0}</span>{" "}
             <span>{subscribersData?.summary?.gold || 0}</span>
           </div>
@@ -163,8 +283,9 @@ const CreditSystemManagement = () => {
             <tr>
               <th>User</th>
               <th>Plan</th>
+              <th>Credits</th>
               <th>Purchased On</th>
-              <th>Status</th>
+              {/* <th>Status</th> */}
               <th>Actions</th>
             </tr>
           </thead>
@@ -181,31 +302,55 @@ const CreditSystemManagement = () => {
                   <td>
                     <div className="user-info">
                       <img
-                        src={subscriber?.userProfileImg || `https://i.pravatar.cc/40?img=${index + 10}`}
+                        src={
+                          subscriber?.userProfileImg ||
+                          "images/dummy_image.svg"
+                        }
                         alt={subscriber?.userName}
                       />
-                      <span>{subscriber?.userName || "N/A"}</span>
+                      <span>{subscriber?.userName
+                          ? subscriber.userName
+                          : subscriber?.userEmail
+                          ? subscriber.userEmail.slice(0, 2).toUpperCase()
+                          : "-"}</span>
                     </div>
                   </td>
                   <td>
-                    <span className={`plan-text ${subscriber?.plan?.toLowerCase()}`}>
-                      {subscriber?.plan || "N/A"}
+                    <span
+                      className={`plan-text ${subscriber?.plan?.toLowerCase()}`}
+                    >
+                      {subscriber?.plan || "-"}
                     </span>
                   </td>
                   <td className="textGrey">
-                    {subscriber?.purchasedOn ? formatDate(subscriber.purchasedOn) : "N/A"}
+                    {subscriber?.totalCredits || "-"}
                   </td>
-                  <td>
+                  <td className="textGrey">
+                    {subscriber?.purchasedOn
+                      ? formatDate(subscriber.purchasedOn)
+                      : "-"}
+                  </td>
+                  {/* <td>
                     <span className={`status-text ${subscriber?.status?.toLowerCase()}`}>
-                      {subscriber?.status || "N/A"}
+                      {subscriber?.status || "-"}
                     </span>
-                  </td>
+                  </td> */}
                   <td>
                     <div className="action-buttons">
-                      <button className="allocate-btn" disabled={subscribersLoading}>
+                      <button
+                        className="allocate-btn"
+                        disabled={subscribersLoading}
+                        onClick={() =>
+                          handleActionClick("allocate", subscriber)
+                        }
+                      >
                         Allocate
                       </button>
-                      <button className="revoke-btn" disabled={subscribersLoading}>
+                      <button
+                        className="revoke-btn"
+                        disabled={subscribersLoading}
+                        onClick={() => handleActionClick("revoke", subscriber)}
+                      >
                         Revoke
                       </button>
                     </div>
@@ -223,8 +368,8 @@ const CreditSystemManagement = () => {
         </table>
 
         <div className="pagination">
-          <button 
-            className="page-btn" 
+          <button
+            className="page-btn"
             onClick={prevPage}
             disabled={currentPage === 1 || subscribersLoading}
           >
@@ -236,7 +381,9 @@ const CreditSystemManagement = () => {
           <button
             className="page-btn"
             onClick={nextPage}
-            disabled={currentPage === subscribersData?.totalPages || subscribersLoading}
+            disabled={
+              currentPage === subscribersData?.totalPages || subscribersLoading
+            }
           >
             Next
           </button>
@@ -247,31 +394,20 @@ const CreditSystemManagement = () => {
         <div className="position-relative d-flex justify-content-between align-items-center">
           <h6 className="fw-semibold mb-3">Bonus Credit Overview</h6>
           <div className="badge bg-warning text-dark position-absolute top-0 end-0 px-3 py-2">
-            Credits issued <strong>2000</strong>
+            Credits issued{" "}
+            <strong>
+              {referralLoading ? "..." : referralData?.creditsIssued || 0}
+            </strong>
           </div>
         </div>
 
         <div className="row">
-          <div className="col-md-4 d-flex flex-column align-items-center justify-content-center text-center chart-box">
-            <div className="chart-circle mb-2">
-              <div className="chart-inner">2394</div>
+          <div className="col-md-4">
+              <ReferralPieChart
+                chartData={referralData?.chart}
+                loading={referralLoading}
+              />
             </div>
-
-            <div className="d-flex justify-content-center gap-3 mt-2 stats">
-              <div>
-                <span className="dot dot-1"></span>22 <small>1st</small>
-              </div>
-              <div>
-                <span className="dot dot-2"></span>15 <small>2nd</small>
-              </div>
-              <div>
-                <span className="dot dot-3"></span>170 <small>3rd</small>
-              </div>
-              <div>
-                <span className="dot dot-4"></span>450 <small>4th</small>
-              </div>
-            </div>
-          </div>
 
           <div className="col-md-8">
             <h6 className="top-heading-text mb-4">
@@ -279,54 +415,119 @@ const CreditSystemManagement = () => {
             </h6>
 
             <div className="d-flex flex-wrap gap-3">
-              <div className="leader-card text-center p-3">
-                <div className="d-inline-block">
-                  <img
-                    src="../images/profile-img.svg"
-                    className="rounded-circle border border-3 border-warning"
-                    alt="leader"
-                  />
-                  <span className="rank-badge bg-warning text-dark">1st</span>
-                </div>
-                <h6 className="mt-2 mb-1 fw-semibold">
-                  Ratna <span className="badge bg-success">+5</span>
-                </h6>
-                <p className="mb-0 fw-bold">14 referrals</p>
-              </div>
-
-              <div className="leader-card text-center p-3">
-                <div className="d-inline-block">
-                  <img
-                    src="../images/profile-img.svg"
-                    className="rounded-circle border border-3 border-warning"
-                    alt="leader"
-                  />
-                  <span className="rank-badge bg-warning text-dark">2nd</span>
-                </div>
-                <h6 className="mt-2 mb-1 fw-semibold">
-                  Sari <span className="badge bg-success">+8</span>
-                </h6>
-                <p className="mb-0 fw-bold">20 referrals</p>
-              </div>
-
-              <div className="leader-card text-center p-3">
-                <div className="d-inline-block">
-                  <img
-                    src="../images/profile-img.svg"
-                    className="rounded-circle border border-3 border-warning"
-                    alt="leader"
-                  />
-                  <span className="rank-badge bg-warning text-dark">3rd</span>
-                </div>
-                <h6 className="mt-2 mb-1 fw-semibold">
-                  Ali <span className="badge bg-success">+10</span>
-                </h6>
-                <p className="mb-0 fw-bold">25 referrals</p>
-              </div>
+              {referralLoading ? (
+                <div className="text-muted">Loading leaderboard...</div>
+              ) : referralData?.leaderboard?.length > 0 ? (
+                referralData.leaderboard.map((leader) => (
+                  <div
+                    key={leader.rank}
+                    className="leader-card text-center p-3"
+                  >
+                    <div className="d-inline-block">
+                      <img
+                        src={
+                          leader.profile_image ||
+                          "images/dummy_image.svg"
+                        }
+                        className="rounded-circle border border-3 border-warning"
+                        alt={leader.name || "leader"}
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <span className="rank-badge bg-warning text-dark">
+                        {leader.rank === 1
+                          ? "1st"
+                          : leader.rank === 2
+                          ? "2nd"
+                          : leader.rank === 3
+                          ? "3rd"
+                          : `${leader.rank}th`}
+                      </span>
+                    </div>
+                    <h6 className="mt-2 mb-1 fw-semibold">
+                      {leader.name || "N/A"}
+                    </h6>
+                    <p className="mb-0 fw-bold">{leader.referrals} referrals</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-muted">No leaderboard data available</div>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Credit Action Modal */}
+      {showModal && selectedSubscriber && (
+        <div className="delete-modal-overlay" onClick={handleCloseModal}>
+          <div
+            className="delete-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h3 className="delete-modal-title m-0">Credit Management</h3>
+              <button
+                onClick={handleCloseModal}
+                disabled={actionLoading}
+                className="modal-cross-button"
+              >
+                &times;
+              </button>
+            </div>
+
+            <p className="delete-modal-message">
+              <strong>{selectedSubscriber.userName}</strong> currently has{" "}
+              <strong>{selectedSubscriber.totalCredits || 0} credits</strong>.
+            </p>
+
+            <div className="mb-3">
+              <label className="form-label form-label-text">
+                {modalAction === "allocate"
+                  ? "Credits to Allocate"
+                  : "Credits to Revoke"}
+              </label>
+              <input
+                type="number"
+                className="form-control form-input-style"
+                placeholder="Enter amount"
+                value={creditAmount}
+                onChange={(e) => setCreditAmount(e.target.value)}
+                min="1"
+                disabled={actionLoading}
+              />
+            </div>
+
+            <div className="delete-modal-actions">
+              <button
+                onClick={handleCloseModal}
+                className="delete-modal-button delete-modal-button-cancel"
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                className="delete-modal-button delete-modal-button-confirm"
+                disabled={actionLoading || !creditAmount}
+                style={{
+                  backgroundColor:
+                    modalAction === "allocate" ? "#3e35dfff" : "#d32f2f",
+                }}
+              >
+                {actionLoading
+                  ? "Processing..."
+                  : modalAction === "allocate"
+                  ? "Allocate"
+                  : "Revoke"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

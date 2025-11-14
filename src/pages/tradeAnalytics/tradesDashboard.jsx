@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import "../tradeAnalytics/trades.css";
 import "../userManagement/users.css";
 import { FaTimes } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 import { showToast } from "../../components/showToast";
 import { get } from "../../hooks/services/services";
 
 const TradesDashboard = () => {
-  const navigate = useNavigate();
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [tradesData, setTradesData] = useState({ trades: [] });
@@ -16,6 +14,9 @@ const TradesDashboard = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
+  const [providerProfile, setProviderProfile] = useState(null);
+  const [requesterProfile, setRequesterProfile] = useState(null);
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
   const [cardData, setCardData] = useState([
     {
       count: 0,
@@ -38,6 +39,23 @@ const TradesDashboard = () => {
     // { count: 0, label: "Disputes", change: "Since last month", icon: "../images/flag.svg" },
   ]);
 
+  // Fetch user profile function
+  const fetchUserProfile = async (userId) => {
+    try {
+      const response = await get(`user/user-profile/${userId}`);
+      if (response.status === 200 || response.status === 201) {
+        return response.data?.data || null;
+      }
+      return null;
+    } catch (error) {
+      console.error(
+        `Error fetching profile for user ${userId}:`,
+        error.message
+      );
+      return null;
+    }
+  };
+
   // Fetch categories function
   const fetchCategories = async () => {
     try {
@@ -45,11 +63,22 @@ const TradesDashboard = () => {
       if (response.status === 200 || response.status === 201) {
         setCategories(response.data?.data || []);
       } else {
-        showToast(response?.data?.message || response?.message || "Failed to load categories", "warning");
+        showToast(
+          response?.data?.message ||
+            response?.message ||
+            "Failed to load categories",
+          "warning"
+        );
       }
     } catch (error) {
       console.error("Error fetching categories:", error.message);
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching categories", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching categories",
+        "error"
+      );
     }
   };
 
@@ -75,7 +104,13 @@ const TradesDashboard = () => {
       setTradesData(response.data?.data || { trades: [] });
     } catch (error) {
       console.error("Error fetching trades:", error.message);
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Error loading trades", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error loading trades",
+        "error"
+      );
       setTradesData({ trades: [] });
     } finally {
       setLoading(false);
@@ -85,7 +120,7 @@ const TradesDashboard = () => {
   const handleExport = async () => {
     try {
       const response = await get("publishtrades/export", {
-        responseType: 'blob'
+        responseType: "blob",
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -99,13 +134,29 @@ const TradesDashboard = () => {
         link.remove();
         window.URL.revokeObjectURL(url);
 
-        showToast(response?.data?.message || response?.message || "Trades exported successfully!", "success");
+        showToast(
+          response?.data?.message ||
+            response?.message ||
+            "Trades exported successfully!",
+          "success"
+        );
       } else {
-        showToast(response?.data?.message || response?.message || "Failed to export data", "error");
+        showToast(
+          response?.data?.message ||
+            response?.message ||
+            "Failed to export data",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Export failed:", error.message);
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Export failed. Please try again.", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Export failed. Please try again.",
+        "error"
+      );
     }
   };
 
@@ -135,11 +186,22 @@ const TradesDashboard = () => {
           // { count: 16, label: "Disputes", change: "Since last month", icon: "../images/flag.svg" },
         ]);
       } else {
-        showToast(response?.data?.message || response?.message || "Failed to fetch trade summary", "warning");
+        showToast(
+          response?.data?.message ||
+            response?.message ||
+            "Failed to fetch trade summary",
+          "warning"
+        );
       }
     } catch (error) {
       console.error("Error fetching status summary:", error.message);
-      showToast(error.response?.data?.message || error.response?.message || error.message || "Error fetching trade summary", "error");
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching trade summary",
+        "error"
+      );
     }
   };
 
@@ -158,14 +220,35 @@ const TradesDashboard = () => {
     fetchCategories();
   }, []);
 
-  const handleRowClick = (trade) => {
+  const handleRowClick = async (trade) => {
     setSelectedTrade(trade);
     setIsDrawerOpen(true);
+    setLoadingProfiles(true);
+    setProviderProfile(null);
+    setRequesterProfile(null);
+
+    try {
+      // Fetch both profiles in parallel
+      const [providerData, requesterData] = await Promise.all([
+        fetchUserProfile(trade.userId),
+        fetchUserProfile(trade.requestedUserId),
+      ]);
+
+      setProviderProfile(providerData);
+      setRequesterProfile(requesterData);
+    } catch (error) {
+      console.error("Error loading user profiles:", error);
+      showToast("Failed to load user profiles", "error");
+    } finally {
+      setLoadingProfiles(false);
+    }
   };
 
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     setSelectedTrade(null);
+    setProviderProfile(null);
+    setRequesterProfile(null);
   };
 
   const nextPage = () => {
@@ -301,33 +384,39 @@ const TradesDashboard = () => {
               </tr>
             ) : tradesData?.trades?.length > 0 ? (
               tradesData.trades.map((trade, index) => (
-                <tr key={trade.id || index}
+                <tr
+                  key={trade.id || index}
                   onClick={() => handleRowClick(trade)}
                   className="clickable-row"
                 >
                   <td
-                    // onClick={() => handleRowClick(trade)}
-                    // className="clickable-row"
+                  // onClick={() => handleRowClick(trade)}
+                  // className="clickable-row"
                   >
                     {trade.publishTradeId || "—"}
                   </td>
                   <td
-                    // onClick={() =>
-                    //   navigate("/trade-user-profile", {
-                    //     state: { userId: trade.userId },
-                    //   })
-                    // }
-                    // className="clickable-row"
+                  // onClick={() =>
+                  //   navigate("/trade-user-profile", {
+                  //     state: { userId: trade.userId },
+                  //   })
+                  // }
+                  // className="clickable-row"
                   >
                     <div className="user-info">
                       <img
                         src={
-                          trade.tradeByProfileImg ||
-                          `https://i.pravatar.cc/40?img=${index + 10}`
+                          trade.tradeByProfileImg || "images/dummy_image.svg"
                         }
                         alt={trade.tradeBy || "user"}
                       />
-                      <span>{trade.tradeBy || "—"}</span>
+                      <span>
+                          {trade?.tradeBy
+                          ? trade.tradeBy
+                          : trade?.userEmail
+                          ? trade.userEmail.slice(0, 2).toUpperCase()
+                          : "-"}
+                      </span>
                     </div>
                   </td>
                   <td>
@@ -336,11 +425,17 @@ const TradesDashboard = () => {
                         src={
                           trade.tradeWithProfileImg
                             ? trade.tradeWithProfileImg
-                            : `https://i.pravatar.cc/40?img=${index + 10}`
+                            : "images/dummy_image.svg"
                         }
                         alt={trade.tradeWith || "user"}
                       />
-                      <span>{trade.tradeWith || "—"}</span>
+                      <span>
+                        {trade?.tradeWith
+                          ? trade.tradeWith
+                          : trade?.tradeWithUserEmail
+                          ? trade.tradeWithUserEmail.slice(0, 2).toUpperCase()
+                          : "-"}
+                      </span>
                     </div>
                   </td>
                   <td className="textGrey">{trade.category || "—"}</td>
@@ -428,13 +523,13 @@ const TradesDashboard = () => {
                 </h6>
               </div>
               <div className="d-flex gap-3 align-items-center">
-                <div className="cursor-pointer">
+                {/* <div className="cursor-pointer">
                   <img
                     src="../images/link.svg"
                     alt="link icon"
                     className="img-fluid"
                   />
-                </div>
+                </div> */}
                 <button
                   className="p-2 bg-transparent border-0"
                   onClick={closeDrawer}
@@ -448,113 +543,149 @@ const TradesDashboard = () => {
               {/* Provider Section */}
               <div className="card border-0 drawer-card mb-3">
                 <h6 className="fw-medium mb-3">Provider</h6>
-                <div className="row g-3 align-items-center">
-                  <div className="col-md-4 ">
-                    <div className="stats-box d-flex align-items-center gap-3 p-3">
-                      <img
-                        src={
-                          selectedTrade.tradeByProfileImg ||
-                          "../images/dummy_image.jpeg"
-                        }
-                        alt="provider"
-                        className="rounded-circle"
-                        style={{ width: "60px", height: "60px" }}
-                      />
-                      <div>
-                        <p className="fw-semibold mb-1">
-                          {selectedTrade.tradeBy || "—"}
+                {loadingProfiles ? (
+                  <div className="text-center py-4">Loading profile...</div>
+                ) : (
+                  <div className="row g-3 align-items-center">
+                    <div className="col-md-4 ">
+                      <div className="stats-box d-flex align-items-center gap-3 p-3">
+                        <img
+                          src={
+                            providerProfile?.profile_image ||
+                            "images/dummy_image.svg"
+                          }
+                          alt="provider"
+                          className="rounded-circle"
+                          style={{ width: "60px", height: "60px" }}
+                        />
+                        <div>
+                          <p className="fw-semibold mb-1">
+                            {providerProfile?.username || "—"}
+                          </p>
+                          <span className="badges rounded-pill px-3">
+                            {providerProfile?.year || "—"} years
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-4 ">
+                      <div className="d-flex align-items-center gap-3 stats-box p-3">
+                        <p
+                          className="mt-2 small"
+                          style={{ color: "rgba(26, 26, 26, 1)" }}
+                        >
+                          <i className="bi bi-telephone me-2"></i>
+                          {providerProfile?.phoneNumber || "—"} <br />
+                          <i className="bi bi-envelope me-2"></i>
+                          {providerProfile?.email || "—"} <br />
+                          <i className="bi bi-code-slash me-2"></i>
+                          {providerProfile?.KeySkill
+                            ? providerProfile.KeySkill.slice(0, 25) +
+                              (providerProfile.KeySkill.length > 25
+                                ? "..."
+                                : "")
+                            : "—"}
                         </p>
-                        <span className="badges rounded-pill px-3">
-                          3rd Year
-                        </span>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="stats-box p-3 rounded">
+                        <p className="mb-1 small d-flex align-items-center gap-4">
+                          <span>Total Trades</span>
+                          <span className="fw-semibold text-dark">
+                            {providerProfile?.totalTrade || 0}
+                          </span>
+                        </p>
+                        <p className="mb-1 small d-flex align-items-center gap-4">
+                          <span>Published</span>
+                          <span className="fw-semibold text-dark">
+                            {providerProfile?.published || 0}
+                          </span>
+                        </p>
+                        <p className="mb-1 small d-flex align-items-center gap-4">
+                          <span>Reported</span>
+                          <span className="fw-semibold text-dark">
+                            {providerProfile?.reported || 0}
+                          </span>
+                        </p>
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-4 ">
-                    <div className="d-flex align-items-center gap-3 stats-box p-3">
-                      <p
-                        className="mt-2 small"
-                        style={{ color: "rgba(26, 26, 26, 1)" }}
-                      >
-                        <i className="bi bi-telephone me-2"></i> — <br />
-                        <i className="bi bi-envelope me-2"></i> — <br />
-                        <i className="bi bi-code-slash me-2"></i> —
-                      </p>
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="stats-box p-3 rounded">
-                      <p className="mb-1 small d-flex align-items-center gap-4">
-                        <span>Total Trades</span>
-                        <span className="fw-semibold text-dark">—</span>
-                      </p>
-                      <p className="mb-1 small d-flex align-items-center gap-4">
-                        <span>Published</span>
-                        <span className="fw-semibold text-dark">—</span>
-                      </p>
-                      <p className="mb-1 small d-flex align-items-center gap-4">
-                        <span>Reported</span>
-                        <span className="fw-semibold text-dark">—</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Requester Section */}
               <div className="drawer-card mb-3">
                 <h6 className="fw-medium mb-3">Requester</h6>
-                <div className="row">
-                  <div className="col-md-4">
-                    <div className="d-flex align-items-center gap-3 stats-box p-3">
-                      <img
-                        src={
-                          selectedTrade.tradeWithProfileImg ||
-                          "../images/dummy_image.jpeg"
-                        }
-                        alt="requester"
-                        className="rounded-circle"
-                        style={{ width: "60px", height: "60px" }}
-                      />
-                      <div>
-                        <p className="fw-semibold mb-1">
-                          {selectedTrade.tradeWith || "—"}
+                {loadingProfiles ? (
+                  <div className="text-center py-4">Loading profile...</div>
+                ) : (
+                  <div className="row">
+                    <div className="col-md-4">
+                      <div className="d-flex align-items-center gap-3 stats-box p-3">
+                        <img
+                          src={
+                            requesterProfile?.profile_image ||
+                            "images/dummy_image.svg"
+                          }
+                          alt="requester"
+                          className="rounded-circle"
+                          style={{ width: "60px", height: "60px" }}
+                        />
+                        <div>
+                          <p className="fw-semibold mb-1">
+                            {requesterProfile?.username || "—"}
+                          </p>
+                          <span className="badges rounded-pill px-3">
+                            {requesterProfile?.year || "—"} years
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="d-flex align-items-center gap-3 stats-box p-3">
+                        <p
+                          className="mt-2 small"
+                          style={{ color: "rgba(26, 26, 26, 1)" }}
+                        >
+                          <i className="bi bi-telephone me-2"></i>
+                          {requesterProfile?.phoneNumber || "—"} <br />
+                          <i className="bi bi-envelope me-2"></i>
+                          {requesterProfile?.email || "—"} <br />
+                          <i className="bi bi-code-slash me-2"></i>
+                          {requesterProfile?.KeySkill
+                            ? requesterProfile.KeySkill.slice(0, 25) +
+                              (requesterProfile.KeySkill.length > 25
+                                ? "..."
+                                : "")
+                            : "—"}
                         </p>
-                        <span className="badges rounded-pill px-3">
-                          4th Year
-                        </span>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="stats-box p-3 rounded">
+                        <p className="mb-1 small d-flex align-items-center gap-4">
+                          <span>Total Trades</span>
+                          <span className="fw-semibold text-dark">
+                            {requesterProfile?.totalTrade || 0}
+                          </span>
+                        </p>
+                        <p className="mb-1 small d-flex align-items-center gap-4">
+                          <span>Published</span>
+                          <span className="fw-semibold text-dark">
+                            {requesterProfile?.published || 0}
+                          </span>
+                        </p>
+                        <p className="mb-1 small d-flex align-items-center gap-4">
+                          <span>Reported</span>
+                          <span className="fw-semibold text-dark">
+                            {requesterProfile?.reported || 0}
+                          </span>
+                        </p>
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-4">
-                    <div className="d-flex align-items-center gap-3 stats-box p-3">
-                      <p
-                        className="mt-2 small"
-                        style={{ color: "rgba(26, 26, 26, 1)" }}
-                      >
-                        <i className="bi bi-telephone me-2"></i> — <br />
-                        <i className="bi bi-envelope me-2"></i> — <br />
-                        <i className="bi bi-code-slash me-2"></i> —
-                      </p>
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="stats-box p-3 rounded">
-                      <p className="mb-1 small d-flex align-items-center gap-4">
-                        <span>Total Trades</span>
-                        <span className="fw-semibold text-dark">—</span>
-                      </p>
-                      <p className="mb-1 small d-flex align-items-center gap-4">
-                        <span>Published</span>
-                        <span className="fw-semibold text-dark">—</span>
-                      </p>
-                      <p className="mb-1 small d-flex align-items-center gap-4">
-                        <span>Reported</span>
-                        <span className="fw-semibold text-dark">—</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Dispute Log */}
