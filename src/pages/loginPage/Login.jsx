@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './login.css';
 import { useNavigate } from 'react-router-dom';
 import { showToast } from '../../components/showToast';
-import { get, post } from '../../hooks/services/services';
+import { post } from '../../hooks/services/services';
 import { loginSuccess } from '../../components/authRedux/authSlice';
 
 const Login = () => {

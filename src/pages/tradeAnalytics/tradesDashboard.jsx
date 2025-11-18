@@ -411,7 +411,7 @@ const TradesDashboard = () => {
                         alt={trade.tradeBy || "user"}
                       />
                       <span>
-                          {trade?.tradeBy
+                       {trade?.tradeBy
                           ? trade.tradeBy
                           : trade?.userEmail
                           ? trade.userEmail.slice(0, 2).toUpperCase()
@@ -540,9 +540,9 @@ const TradesDashboard = () => {
             </div>
 
             <div className="drawer-body p-4">
-              {/* Provider Section */}
+              {/* Requester Section */}
               <div className="card border-0 drawer-card mb-3">
-                <h6 className="fw-medium mb-3">Provider</h6>
+                <h6 className="fw-medium mb-3">Requester</h6>
                 {loadingProfiles ? (
                   <div className="text-center py-4">Loading profile...</div>
                 ) : (
@@ -614,9 +614,9 @@ const TradesDashboard = () => {
                 )}
               </div>
 
-              {/* Requester Section */}
+              {/* Provider Section */}
               <div className="drawer-card mb-3">
-                <h6 className="fw-medium mb-3">Requester</h6>
+                <h6 className="fw-medium mb-3">Provider</h6>
                 {loadingProfiles ? (
                   <div className="text-center py-4">Loading profile...</div>
                 ) : (
