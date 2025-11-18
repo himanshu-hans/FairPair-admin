@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../userManagement/users.css";
 import { FaCheckCircle, FaClock, FaTimesCircle, FaTimes } from "react-icons/fa";
-import { get, del, patch } from "../../hooks/services/services";
+import { get, patch } from "../../hooks/services/services";
 import { showToast } from "../../components/showToast";
 import { useNavigate } from "react-router-dom";
 
