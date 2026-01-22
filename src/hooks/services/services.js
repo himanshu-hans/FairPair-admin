@@ -1,11 +1,10 @@
 import axios from 'axios';
-import { API_BASE_URL } from './apiUrl';
 import store from '../../components/authRedux/store';
 import { logout } from '../../components/authRedux/authSlice';
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: process.env.REACT_APP_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
