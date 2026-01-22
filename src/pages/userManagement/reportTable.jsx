@@ -1,139 +1,285 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import "../userManagement/users.css";
-import { fetchDataAuth } from '../../hooks/services/services';
-import { useNavigate } from "react-router-dom";
-
-const reportData = [
-  { by: 'Kwame Nkrumah', against: 'Kwame Nkrumah', reason: 'Spam', raisedOn: '29 Jun 2:00 PM', actions: ['Investigate', 'Discard'] },
-  { by: 'Amina Jalloh', against: 'Amina Jalloh', reason: 'Fraud', raisedOn: '3 Jul 6:00 PM', actions: ['Investigate', 'Discard'] },
-  { by: 'Thandiwe Moyo', against: 'Thandiwe Moyo', reason: 'Bullying', raisedOn: '4 Jul 7:00 PM', actions: ['Investigate', 'Discard'] },
-  { by: 'Fatoumata Diallo', against: 'Fatoumata Diallo', reason: 'Reason not listed here', raisedOn: '2 Jul 5:00 PM', actions: ['Resolved'] },
-  { by: 'Dakarai Nyasha', against: 'Dakarai Nyasha', reason: 'Fraud', raisedOn: '5 Jul 8:00 PM', actions: ['Investigate', 'Discard'] },
-  { by: 'Sipho Ndlela', against: 'Sipho Ndlela', reason: 'Spam', raisedOn: '1 Jul 4:00 PM', actions: ['Investigate', 'Discard'] },
-  { by: 'Yaa Asantewaa', against: 'Yaa Asantewaa', reason: 'Bullying', raisedOn: '6 Jul 9:00 PM', actions: ['Investigate', 'Discard'] },
-  { by: 'Chinua Achebe', against: 'Chinua Achebe', reason: 'Fraud', raisedOn: '30 Jun 3:00 PM', actions: ['Investigate', 'Discard'] },
-  { by: 'Zuri Mthethwa', against: 'Zuri Mthethwa', reason: 'Bullying', raisedOn: '7 Jul 10:00 PM', actions: ['Investigate', 'Discard'] },
-  { by: 'Lola Abiola', against: 'Lola Abiola', reason: 'Spam', raisedOn: '29 Jun 2:00 PM', actions: ['Investigate', 'Discard'] },
-];
+import { get, patch } from "../../hooks/services/services";
+import { showToast } from "../../components/showToast";
 
 const ReportTable = () => {
-const navigate = useNavigate()
-  const [userReportList, setUserReportList] = useState()
-   const [currentPage, setCurrentPage] = useState(1);
-      const itemsPerPage = 1;
-
-
-      const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentRequests = userReportList?.users?.slice(indexOfFirstItem, indexOfLastItem);
+  const [userReportList, setUserReportList] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState({});
 
   const nextPage = () => {
-    if (currentPage < userReportList?.totalPages){
-      setCurrentPage((currentPage)=>currentPage + 1);
+    if (currentPage < userReportList?.totalPages) {
+      setCurrentPage((prev) => prev + 1);
     }
   };
-console.log(userReportList?.users,"reportlist")
+
   const prevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage((currentPage)=>currentPage - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
 
-    const getActionButtonClass = (action) => {
-    switch (action) {
-      case 'Investigate':
-        return 'action-btn investigate-btn';
-      case 'Discard':
-        return 'action-btn discard-btn';
-      case 'Resolved':
-        return 'action-btn resolved-btn';
-      default:
-        return 'action-btn';
-    }
-  };
+  const fetchUserReportList = async () => {
+    setLoading(true);
+    try {
+      const response = await get(`report-trade/all_report?page=${currentPage}`);
 
-   const fetchUserReportList = async () => {
-      try {
-        const response = await fetchDataAuth(
-          `report-trade/all_report?page=${currentPage}`,
-          navigate
-        );
-        if (!response.ok)
-          throw new Error("Failed to fetch data from the server.");
-        const getData = await response.json();
-        setUserReportList(getData?.data)
-      } catch (error) {
-        console.log(error.message);
+      if (response.status === 200 || response.status === 201) {
+        setUserReportList(response.data?.data);
       }
-    };
-  
+    } catch (error) {
+      console.error("Error fetching reports:", error.message);
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching reports",
+        "error"
+      );
+      setUserReportList(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  
-    useEffect(() => {
-      fetchUserReportList()
-    }, [currentPage])
-  
+  // Get available actions based on current status
+  const getActionsForStatus = (status) => {
+    const normalizedStatus = status?.toLowerCase();
+
+    switch (normalizedStatus) {
+      case "pending":
+        return ["Investigate", "Discard"];
+      case "under review":
+        return ["Resolve", "Dismiss"];
+      case "resolved":
+        return ["Reopen"];
+      case "dismissed":
+        return ["Reopen"];
+      default:
+        return ["Investigate", "Discard"]; // Default actions for unknown status
+    }
+  };
+
+  const handleReportAction = async (reportId, action) => {
+    // Set loading for specific report and action
+    setActionLoading((prev) => ({ ...prev, [`${reportId}-${action}`]: true }));
+
+    try {
+      const payload = {
+        action: action, // Send action as-is (Investigate, Dismiss, Resolve, Reopen)
+      };
+
+      const response = await patch(
+        `report-trade/update_report/${reportId}`,
+        payload
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        showToast(
+          response?.data?.message ||
+            response?.message ||
+            "Action completed successfully!",
+          "success"
+        );
+        fetchUserReportList(); // Refresh the list to get updated statuses
+      }
+    } catch (error) {
+      console.error(`Error updating report:`, error.message);
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error processing report",
+        "error"
+      );
+    } finally {
+      setActionLoading((prev) => ({
+        ...prev,
+        [`${reportId}-${action}`]: false,
+      }));
+    }
+  };
+
+  const getActionButtonClass = (action) => {
+    switch (action.toLowerCase()) {
+      case "investigate":
+        return "action-btn investigate-btn";
+      case "discard":
+        return "action-btn discard-btn";
+      case "resolve":
+        return "action-btn resolved-btn";
+      case "dismiss":
+        return "action-btn dismiss-btn";
+      case "reopen":
+        return "action-btn reopen-btn";
+      default:
+        return "action-btn";
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case "pending":
+        return "status-badge status-pending";
+      case "under review":
+        return "status-badge status-under-review";
+      case "resolved":
+        return "status-badge status-resolved";
+      case "dismissed":
+        return "status-badge status-dismissed";
+      default:
+        return "status-badge";
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      day: "numeric",
+      month: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  useEffect(() => {
+    fetchUserReportList();
+  }, [currentPage]);
+
   return (
     <div className="users-container">
-          <div className="users-header">
-            {/* <h2>Users</h2> */}
-            <div className="user-count">
-              Reports Raised <span>10</span>
-            </div>
-          </div>
+      <div className="users-header">
+        <div className="user-count">
+          Reports Raised <span>{userReportList?.totalItems || 0}</span>
+        </div>
+      </div>
+
       <table className="table table-hover">
         <thead>
           <tr>
-            <th>By</th>
-            <th>Against</th>
+            <th>Reported By</th>
+            <th>Reported Against</th>
             <th>Reason</th>
+            <th>Status</th>
             <th>Raised On</th>
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
-          {reportData.map((report, index) => (
-            <tr key={index}>
-                <td>
-                    <div className="user-info">
-                      <img
-                        src={`https://i.pravatar.cc/40?img=${index + 10}`}
-                        alt={report.by}
-                      />
-                      <span>{report.by}</span>
-                    </div>
-                </td>
-                <td>
-                    <div className="user-info">
-                      <img
-                        src={`https://i.pravatar.cc/40?img=${index + 10}`}
-                        alt={report.against}
-                      />
-                      <span>{report.against}</span>
-                    </div>
-                </td>
-              <td className='textGrey'>{report.reason}</td>
-              <td className='textGrey'>{report.raisedOn}</td>
-             <td className="actions-cell">
-                {report.actions.map((action, i) => (
-                  <button
-                    key={i}
-                    className={getActionButtonClass(action)}
-                  >
-                    {action}
-                  </button>
-                ))}
+          {loading ? (
+            <tr>
+              <td colSpan="6" className="text-center text-muted py-4">
+                Loading reports...
               </td>
             </tr>
-          ))}
+          ) : userReportList?.users?.length > 0 ? (
+            userReportList.users.map((report, index) => {
+              const availableActions = getActionsForStatus(report?.status);
+
+              return (
+                <tr key={report.id || index}>
+                  <td>
+                    <div className="user-info">
+                      <img
+                        src={
+                          report?.reportedByProfileImage ||
+                          "images/dummy_image.svg"
+                        }
+                        alt={report?.reportedBy || "User"}
+                      />
+                      <span>
+                        {report?.reportedBy
+                          ? report.reportedBy
+                          : report?.reportedByUserEmail
+                          ? report.reportedByUserEmail.slice(0, 2).toUpperCase()
+                          : "-"}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div className="user-info">
+                      <img
+                        src={
+                          report?.reportedAgainstProfileImage ||
+                          "images/dummy_image.svg"
+                        }
+                        alt={report?.reportedAgainst || "User"}
+                      />
+                      <span>
+                        {report?.reportedAgainst
+                          ? report.reportedAgainst
+                          : report?.reportedAgainstUserEmail
+                          ? report.reportedAgainstUserEmail
+                              .slice(0, 2)
+                              .toUpperCase()
+                          : "-"}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td className="textGrey">{report?.report || "-"}</td>
+                  <td>
+                    <span className={getStatusBadgeClass(report?.status)}>
+                      {report?.status || "-"}
+                    </span>
+                  </td>
+                  <td className="textGrey">{formatDate(report?.created_at)}</td>
+
+                  <td className="actions-cell">
+                    {availableActions.map((action) => {
+                      const isActionLoading =
+                        actionLoading[`${report.id}-${action}`];
+
+                      return (
+                        <button
+                          key={action}
+                          className={getActionButtonClass(action)}
+                          onClick={() => handleReportAction(report.id, action)}
+                          disabled={isActionLoading || loading}
+                        >
+                          {isActionLoading ? "Processing..." : action}
+                        </button>
+                      );
+                    })}
+                  </td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="6" className="text-center text-muted py-4">
+                No Reports Found.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
 
-        <div className="pagination">
-            <button className="page-btn" onClick={prevPage}>Previous</button>
-            <span className="page-numbers">{currentPage}</span>
-            <button className="page-btn" onClick={nextPage}>Next</button>
-          </div>
+      <div className="pagination">
+        <button
+          className="page-btn"
+          onClick={prevPage}
+          disabled={currentPage === 1 || loading}
+        >
+          Previous
+        </button>
+        <span className="page-numbers">
+          {currentPage} / {userReportList?.totalPages || 1}
+        </span>
+        <button
+          className="page-btn"
+          onClick={nextPage}
+          disabled={currentPage === userReportList?.totalPages || loading}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

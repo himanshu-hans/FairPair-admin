@@ -1,57 +1,100 @@
 import React, { useEffect, useState } from "react";
 import "./users.css";
-import { fetchDataAuth } from "../../hooks/services/services";
-import { useNavigate } from "react-router-dom";
+import { get, patch } from "../../hooks/services/services";
+import { showToast } from "../../components/showToast";
 
 function RequestTable() {
-  const navigate = useNavigate();
-  const [userRequestList, setUserRequestList] = useState({ users: [] });
+  const [userRequestList, setUserRequestList] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const itemsPerPage = 5;
-    const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUsers = userRequestList?.users?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const [loading, setLoading] = useState(false);
 
   const nextPage = () => {
     if (currentPage < userRequestList?.totalPages) {
-      setCurrentPage((currentPage)=>currentPage + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
   const prevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage((currentPage)=>currentPage - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
 
   const fetchUserRequestList = async () => {
+    setLoading(true);
     try {
-      const response = await fetchDataAuth(
-        `user/all_users_Request?page=${currentPage}`,
-        navigate
+      const response = await get(`user/all_users_Request?page=${currentPage}`);
+
+      if (response.status === 200 || response.status === 201) {
+        setUserRequestList(response.data?.data || response?.data);
+      }
+    } catch (error) {
+      console.error("Error fetching user requests:", error.message);
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          "Error fetching user requests",
+        "error"
+      );
+      setUserRequestList(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateRequestStatus = async (userId, status) => {
+    setLoading(true);
+    try {
+      const payload = {
+        status: status,
+      };
+
+      const response = await patch(
+        `user/registration_request/${userId}`,
+        payload
       );
 
-      if (!response?.ok && !response?.data)
-        throw new Error("Failed to fetch data from server.");
-
-      const getData = await response?.json();
-      setUserRequestList(getData?.data);
+      if (response.status === 200 || response.status === 201) {
+        showToast(
+          `User ${
+            status === "approved" ? "accepted" : "rejected"
+          } successfully!`,
+          "success"
+        );
+        fetchUserRequestList();
+      }
     } catch (error) {
-      console.log(error.message);
+      console.error(`Error updating request status:`, error.message);
+      showToast(
+        error.response?.data?.message ||
+          error.response?.message ||
+          error.message ||
+          `Error ${status === "approved" ? "accepting" : "rejecting"} user`,
+        "error"
+      );
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleAccept = (userId) => {
+    updateRequestStatus(userId, "approved");
+  };
+
+  const handleReject = (userId) => {
+    updateRequestStatus(userId, "rejected");
   };
 
   useEffect(() => {
     fetchUserRequestList();
   }, [currentPage]);
 
-
   return (
     <div className="users-container">
       <div className="users-header">
         <div className="user-count">
-          Registration Requests <span>{currentUsers?.length || 0}</span>
+          Registration Requests <span>{userRequestList?.totalItems || 0}</span>
         </div>
       </div>
 
@@ -67,32 +110,54 @@ function RequestTable() {
         </thead>
 
         <tbody>
-          {currentUsers?.length > 0 ? (
-            currentUsers?.map((request, index) => (
+          {loading ? (
+            <tr>
+              <td colSpan="5" className="text-center text-muted py-4">
+                Loading requests...
+              </td>
+            </tr>
+          ) : userRequestList?.users?.length > 0 ? (
+            userRequestList.users.map((request, index) => (
               <tr key={request.id || index}>
                 <td>
                   <div className="user-info">
                     <img
-                      src={`https://i.pravatar.cc/40?img=${index + 10}`}
-                      alt={request?.username || "user"}
+                      src={request?.profile_image || "images/dummy_image.svg"}
+                      alt={request?.username || "User"}
                     />
-                    <span>{request?.username || "N/A"}</span>
+                    <span>
+                      {request?.username || request?.useremail
+                        ? request.useremail.slice(0, 2).toUpperCase()
+                        : ""}
+                    </span>
                   </div>
                 </td>
-                <td>{request?.useremail}</td>
-                <td>{request?.phoneNumber || "—"}</td>
-                <td>{request?.year || "—"}</td>
+                <td className="textGrey">{request?.useremail || "-"}</td>
+                <td className="textGrey">{request?.phoneNumber || "-"}</td>
+                <td className="textGrey">{request?.year || "-"}</td>
                 <td>
                   <div className="action-buttons">
-                    <button className="accept-btn">Accept</button>
-                    <button className="reject-btn">Reject</button>
+                    <button
+                      className="accept-btn"
+                      onClick={() => handleAccept(request.id)}
+                      disabled={loading}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="reject-btn"
+                      onClick={() => handleReject(request.id)}
+                      disabled={loading}
+                    >
+                      Reject
+                    </button>
                   </div>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="7" className="text-center text-muted py-4">
+              <td colSpan="5" className="text-center text-muted py-4">
                 No Registration Requests Found.
               </td>
             </tr>
@@ -102,17 +167,19 @@ function RequestTable() {
 
       <div className="pagination">
         <button
-          onClick={prevPage}
           className="page-btn"
-          disabled={currentPage === 1}
+          onClick={prevPage}
+          disabled={currentPage === 1 || loading}
         >
           Previous
         </button>
-        <span className="page-numbers">{currentPage}</span>
+        <span className="page-numbers">
+          {currentPage} / {userRequestList?.totalPages || 1}
+        </span>
         <button
-          onClick={nextPage}
           className="page-btn"
-          disabled={currentPage === userRequestList?.totalPages}
+          onClick={nextPage}
+          disabled={currentPage === userRequestList?.totalPages || loading}
         >
           Next
         </button>
